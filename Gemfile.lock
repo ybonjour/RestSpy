@@ -2,12 +2,16 @@ PATH
   remote: .
   specs:
     rest-spy (0.0.1)
+      faraday
       sinatra (~> 1.4.0)
 
 GEM
   remote: https://rubygems.org/
   specs:
     diff-lcs (1.2.5)
+    faraday (0.9.1)
+      multipart-post (>= 1.2, < 3)
+    multipart-post (2.0.0)
     rack (1.6.0)
     rack-protection (1.5.3)
       rack
