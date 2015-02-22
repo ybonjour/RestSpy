@@ -3,5 +3,23 @@
 $:.push File.expand_path('../../lib', __FILE__)
 
 require 'rest-spy/application'
+require 'optparse'
 
+options = {}
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: rest-spy [options]"
+
+  opts.on('-p', '--port PORT', Integer, 'Server port') do |port|
+    options[:port] = port.to_i
+  end
+
+  opts.on('-h', '--help', 'Prints help') do
+    puts opts
+    exit
+  end
+end.parse!
+
+port = options[:port] || 1234
+RestSpy::Application.set(:port, port)
 RestSpy::Application.run!

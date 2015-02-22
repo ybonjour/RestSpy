@@ -1,2 +1,2 @@
-require 'rest-spy/model'
-require 'rest-spy/application'
+require 'rest-spy/version'
+require 'rest-spy/api'
