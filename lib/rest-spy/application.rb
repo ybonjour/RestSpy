@@ -12,28 +12,28 @@ module RestSpy
       return 400 unless params[:pattern] && params[:body]
 
       d = Model::Double.new(params[:pattern], params[:body], params[:status_code], params[:headers])
-      @@DOUBLES.register(d)
+      @@DOUBLES.register(d, request.port)
 
       200
     end
 
     delete '/doubles/all' do
-      @@DOUBLES.reset
+      @@DOUBLES.reset(request.port)
     end
 
     post '/proxies' do
       return 400 unless params[:pattern] && params[:redirect_url]
 
       p = Model::Proxy.new(params[:pattern], params[:redirect_url])
-      @@PROXIES.register(p)
+      @@PROXIES.register(p, request.port)
 
       200
     end
 
     get /(.*)/ do
       capture = params[:captures].first
-      double = @@DOUBLES.find_for_endpoint(capture)
-      proxy = @@PROXIES.find_for_endpoint(capture)
+      double = @@DOUBLES.find_for_endpoint(capture, request.port)
+      proxy = @@PROXIES.find_for_endpoint(capture, request.port)
 
       if double
         [double.status_code, double.headers, [double.body]]
