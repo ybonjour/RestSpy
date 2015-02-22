@@ -80,12 +80,12 @@ module RestSpy
     end
 
     context "when trying to hit a Proxy endpoint" do
+      let(:response_headers) { {:field => 'aValue'} }
+      let(:response) { double("response", :body => 'asfdsafafds', :headers => response_headers, :status => 200) }
+
       it "should forward request to http_client if matching Proxy exists" do
         post '/proxies', {pattern: '/proxytest', redirect_url: 'http://www.google.com'}
-
-        response_headers = {:field => 'aValue'}
-        response = double("response", :body => 'asfdsafafds', :headers => response_headers, :status => 200)
-        expect(ProxyServer).to receive(:get).with(anything, 'http://www.google.com').and_return(response)
+        expect(ProxyServer).to receive(:get).with(anything, 'http://www.google.com', anything).and_return(response)
 
         get '/proxytest'
 
