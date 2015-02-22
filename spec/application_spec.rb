@@ -111,5 +111,17 @@ module RestSpy
         expect(last_response.body).to be == 'test'
       end
     end
+
+    context "Remove all doubles" do
+      it "should remove a double" do
+        post '/doubles', {pattern:'/deleted', body: 'test'}
+
+        delete '/doubles/all'
+
+        get '/deleted'
+
+        expect(last_response.status).to be 404
+      end
+    end
   end
 end

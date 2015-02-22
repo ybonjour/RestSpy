@@ -37,6 +37,15 @@ module RestSpy
 
         expect(result).to be element
       end
+
+      it "removes all elements if reset" do
+        registry.register(element)
+
+        registry.reset
+
+        result = registry.find_for_endpoint('/test')
+        expect(result).to be nil
+      end
     end
   end
 end

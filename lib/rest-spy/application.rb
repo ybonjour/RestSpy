@@ -17,6 +17,10 @@ module RestSpy
       200
     end
 
+    delete '/doubles/all' do
+      @@DOUBLES.reset
+    end
+
     post '/proxies' do
       return 400 unless params[:pattern] && params[:redirect_url]
 

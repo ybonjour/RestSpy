@@ -33,8 +33,11 @@ module RestSpy
     end
 
     def post(endpoint, data)
-      full_url = URI::join(base_url, endpoint).to_s
-      Faraday.new.post full_url, data
+      Faraday.new.post full_url(endpoint), data
+    end
+
+    def delete(endpoint)
+      Faraday.new.delete full_url(endpoint)
     end
 
     at_exit do
@@ -63,6 +66,10 @@ module RestSpy
         elapsed += sleep
         raise TimeoutError if elapsed > timeout
       end
+    end
+
+    def full_url(path)
+      URI::join(base_url, path).to_s
     end
 
     def base_url

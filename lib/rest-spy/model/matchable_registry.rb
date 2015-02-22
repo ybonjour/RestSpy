@@ -15,6 +15,10 @@ module RestSpy
         def find_for_endpoint(endpoint)
           @doubles.select { |d| d.matches(endpoint) }.first
         end
+
+        def reset
+          @doubles = []
+        end
     end
   end
 end

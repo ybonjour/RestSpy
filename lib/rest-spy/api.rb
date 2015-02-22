@@ -30,6 +30,10 @@ module RestSpy
       Endpoint.new(server, endpoint_pattern)
     end
 
+    def reset
+      server.delete '/doubles/all'
+    end
+
     def all_endpoints
       Endpoint.new(server, '.*')
     end
