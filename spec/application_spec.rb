@@ -85,7 +85,7 @@ module RestSpy
 
       it "should forward request to http_client if matching Proxy exists" do
         post '/proxies', {pattern: '/proxytest', redirect_url: 'http://www.google.com'}
-        expect(ProxyServer).to receive(:get).with(anything, 'http://www.google.com', anything).and_return(response)
+        expect(ProxyServer).to receive(:execute_remote_request).with(anything, 'http://www.google.com', anything).and_return(response)
 
         get '/proxytest'
 

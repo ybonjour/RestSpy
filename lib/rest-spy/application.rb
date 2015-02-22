@@ -41,7 +41,7 @@ module RestSpy
       if double
         [double.status_code, double.headers, [double.body]]
       elsif proxy
-        remote_response = ProxyServer.get(request, proxy.redirect_url, env)
+        remote_response = ProxyServer.execute_remote_request(request, proxy.redirect_url, env)
         [remote_response.status, remote_response.headers, [remote_response.body]]
       else
         404
