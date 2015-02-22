@@ -2,7 +2,7 @@
 Mock REST endpoints or proxy them to real endpoints.
 
 ## Examples
-Mock `http://localhost:1234/stream` endpoint and proxy all requests,
+Mock `http://localhost:1234/stream` endpoint,
 while requests to all other endpoints are proxied to `https://www.facebook.com`
 
 ```ruby
