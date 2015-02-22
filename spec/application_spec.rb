@@ -9,7 +9,7 @@ module RestSpy
     let(:app) { RestSpy::Application }
 
     context "when posting a Double" do
-      it "should be able post a Double with correct params" do
+      it "should be able to post a Double with correct params" do
         post '/doubles', {pattern: 'test', body: 'test'}
 
         expect(last_response).to be_ok
@@ -34,14 +34,6 @@ module RestSpy
 
         expect(last_response).to be_ok
         expect(last_response.body).to be == 'test'
-      end
-
-      it "should return a 404 if the pattern matches only part of the endpoint" do
-        post '/doubles', {pattern: '/foo', body: 'test'}
-
-        get '/footest'
-
-        expect(last_response.status).to be 404
       end
 
       it "should return 404 if no Double exists" do
@@ -92,14 +84,6 @@ module RestSpy
         expect(last_response.body).to be == 'asfdsafafds'
         expect(last_response.status).to be 200
         expect(last_response.headers).to include(response_headers)
-      end
-
-      it "should return a 404 if the pattern matches only part of the endpoint" do
-        post '/proxies', {pattern: '/fooproxy', redirect_url: 'http://www.google.com'}
-
-        get '/fooproxytest'
-
-        expect(last_response.status).to be 404
       end
 
       it "should return 404 if no Proxy exists" do

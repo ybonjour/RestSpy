@@ -4,8 +4,8 @@ module RestSpy
       def initialize(pattern, body, status_code, headers)
         raise ArgumentError unless pattern && body
 
-        @pattern = pattern
-        @status_code = status_code || 200
+        @pattern = /^#{pattern}$/
+        @status_code = (status_code || 200).to_i
         @headers = headers  || {}
         @body = body
       end

@@ -4,7 +4,7 @@ module RestSpy
       def initialize(pattern, redirect_url)
         raise ArgumentError unless pattern && redirect_url
 
-        @pattern = pattern
+        @pattern = /^#{pattern}$/
         @redirect_url = redirect_url
       end
 

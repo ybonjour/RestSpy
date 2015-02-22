@@ -5,19 +5,13 @@ require 'rest-spy/proxy_server'
 module RestSpy
   class Application < Sinatra::Base
 
-    def set_http_client(http_client)
-      raise ArgumentError unless http_client
-
-    end
-
     @@DOUBLES = Model::DoubleRegistry.new
     @@PROXIES = Model::ProxyRegistry.new
 
     post '/doubles' do
       return 400 unless params[:pattern] && params[:body]
 
-      pattern = /^#{params[:pattern]}$/
-      d = Model::Double.new(pattern, params[:body], params[:status_code], params[:headers])
+      d = Model::Double.new(params[:pattern], params[:body], params[:status_code], params[:headers])
       @@DOUBLES.register(d)
 
       200
@@ -26,8 +20,7 @@ module RestSpy
     post '/proxies' do
       return 400 unless params[:pattern] && params[:redirect_url]
 
-      pattern = /^#{params[:pattern]}$/
-      p = Model::Proxy.new(pattern, params[:redirect_url])
+      p = Model::Proxy.new(params[:pattern], params[:redirect_url])
       @@PROXIES.register(p)
 
       200
