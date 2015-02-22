@@ -8,11 +8,19 @@ module RestSpy
     end
 
     def should_return_error_code(error_code)
-      server.post('/doubles', {:pattern => path_pattern, :status_code => error_code, :body => ''})
+      create_double(error_code, {}, '')
+    end
+
+    def should_return(body = '', status_code = 200, headers = {})
+      create_double(status_code, headers, body)
     end
 
     private
     attr_reader :server, :path_pattern
+
+    def create_double(status_code, headers, body)
+      server.post('/doubles', {:pattern => path_pattern, :status_code => status_code, :headers=>headers, :body => body})
+    end
   end
 
   class Spy
