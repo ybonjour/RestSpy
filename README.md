@@ -1,5 +1,6 @@
 RESTSpy can stub REST calls or proxy them to a real endpoint.
 
+
 Example to simulate an error code on the `/search` endpoint (for GET and POST requests), while all other requests are proxied to `http://www.google.com`
 
 ```ruby
