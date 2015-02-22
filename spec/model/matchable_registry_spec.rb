@@ -2,9 +2,9 @@ require 'rest-spy/model'
 
 module RestSpy
   module Model
-    describe Registry do
-      let(:element) { Double.new(/\/test/, 'body', nil, nil)}
-      let(:registry) { DoubleRegistry.new }
+    describe MatchableRegistry do
+      let(:element) { Matchable.new('/test')}
+      let(:registry) { MatchableRegistry.new }
 
       it "should find a registered element" do
         registry.register(element)
@@ -14,13 +14,13 @@ module RestSpy
         expect(result).to be element
       end
 
-      it "should return nil if no Double was registered" do
+      it "should return nil if no element was registered" do
         result = registry.find_for_endpoint('/foo')
 
         expect(result).to be nil
       end
 
-      it "should return nil if a non matching Double was registered" do
+      it "should return nil if a non matching element was registered" do
         registry.register(element)
 
         result = registry.find_for_endpoint('/foo')
@@ -28,14 +28,14 @@ module RestSpy
         expect(result).to be nil
       end
 
-      it "should return first Double if two Doubles are matching" do
+      it "should return first element if two elements are matching" do
         registry.register(element)
-        element2 = Double.new(/\/test/, 'body2', nil, nil)
+        element2 = Matchable.new('/test')
         registry.register(element2)
 
-        result = registry.find_double_for_endpoint('/test')
+        result = registry.find_for_endpoint('/test')
 
-        expect(result).to be double
+        expect(result).to be element
       end
     end
   end
