@@ -5,8 +5,8 @@ require 'rest-spy/proxy_server'
 module RestSpy
   class Application < Sinatra::Base
 
-    @@DOUBLES = Model::DoubleRegistry.new
-    @@PROXIES = Model::ProxyRegistry.new
+    @@DOUBLES = Model::MatchableRegistry.new
+    @@PROXIES = Model::MatchableRegistry.new
 
     post '/doubles' do
       return 400 unless params[:pattern] && params[:body]
@@ -28,8 +28,8 @@ module RestSpy
 
     get /(.*)/ do
       capture = params[:captures].first
-      double = @@DOUBLES.find_double_for_endpoint(capture)
-      proxy = @@PROXIES.find_proxy_by_endpoint(capture)
+      double = @@DOUBLES.find_for_endpoint(capture)
+      proxy = @@PROXIES.find_for_endpoint(capture)
 
       if double
         [double.status_code, double.headers, [double.body]]

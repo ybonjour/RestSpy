@@ -1,18 +1,16 @@
+require_relative 'matchable'
+
 module RestSpy
   module Model
-    class Proxy
+    class Proxy < Matchable
       def initialize(pattern, redirect_url)
-        raise ArgumentError unless pattern && redirect_url
+        raise ArgumentError unless redirect_url
+        super(pattern)
 
-        @pattern = /^#{pattern}$/
         @redirect_url = redirect_url
       end
 
       attr_reader :redirect_url
-
-      def matches(s)
-        (@pattern =~ s) != nil
-      end
     end
   end
 end

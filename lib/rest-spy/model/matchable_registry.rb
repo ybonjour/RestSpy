@@ -2,7 +2,7 @@ require 'singleton'
 
 module RestSpy
   module Model
-    class DoubleRegistry
+    class MatchableRegistry
         def initialize
           @doubles = []
         end
@@ -12,7 +12,7 @@ module RestSpy
           @doubles << double
         end
 
-        def find_double_for_endpoint(endpoint)
+        def find_for_endpoint(endpoint)
           @doubles.select { |d| d.matches(endpoint) }.first
         end
     end

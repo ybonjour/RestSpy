@@ -20,10 +20,6 @@ module RestSpy
         expect(d.headers).to be == {}
       end
 
-      it "raises an error if no pattern provided" do
-        expect{ Double.new(nil, 'body', nil, nil) }.to raise_error(ArgumentError)
-      end
-
       it "raises an error if no body provided" do
         expect{ Double.new('.*', nil, nil, nil) }.to raise_error(ArgumentError)
       end
@@ -33,28 +29,10 @@ module RestSpy
         expect(d.status_code).to be 400
       end
 
-      it "matches with matching string" do
+      it "can match" do
         d = Double.new('.*', 'body', nil, nil)
         matches = d.matches('test')
         expect(matches).to be true
-      end
-
-      it "does not match with non-matching string" do
-        d = Double.new('test', 'body', nil, nil)
-        matches = d.matches('foo')
-        expect(matches).to be false
-      end
-
-      it "does not match with nil string" do
-        d = Double.new('test', 'body', nil, nil)
-        matches = d.matches(nil)
-        expect(matches).to be false
-      end
-
-      it "does not match if the string is only partially matched" do
-        d = Double.new('test', 'body', nil, nil)
-        matches = d.matches('testfoo')
-        expect(matches).to be false
       end
     end
   end
