@@ -28,6 +28,7 @@ module RestSpy
       @@SERVERS_LOCK.synchronize {
         return unless @@STARTED_SERVERS.include? port
         stop_server_process
+        wait_until_server_stopped
         @@STARTED_SERVERS.delete(port)
       }
     end
@@ -57,13 +58,21 @@ module RestSpy
       @process.stop
     end
 
-    def wait_until_server_running(timeout=3.0, sleep=0.1)
+    def wait_until(timeout=3.0, sleep=0.1, &block)
       elapsed = 0.0
-      until reachable? do
+      until block.call do
         sleep(sleep)
         elapsed += sleep
         raise TimeoutError if elapsed > timeout
       end
+    end
+
+    def wait_until_server_running()
+        wait_until { reachable? }
+    end
+
+    def wait_until_server_stopped()
+        wait_until { !reachable? }
     end
 
     def full_url(path)
