@@ -28,7 +28,6 @@ module RestSpy
       @@SERVERS_LOCK.synchronize {
         return unless @@STARTED_SERVERS.include? port
         stop_server_process
-        wait_until_server_stopped
         @@STARTED_SERVERS.delete(port)
       }
     end
