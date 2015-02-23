@@ -8,6 +8,8 @@ module RestSpy
     @@DOUBLES = Model::MatchableRegistry.new
     @@PROXIES = Model::MatchableRegistry.new
 
+    set :server, %w[thin]
+
     post '/doubles' do
       return 400 unless params[:pattern] && params[:body]
 

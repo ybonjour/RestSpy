@@ -5,13 +5,16 @@ PATH
       childprocess
       faraday
       sinatra
+      thin
 
 GEM
   remote: https://rubygems.org/
   specs:
     childprocess (0.5.5)
       ffi (~> 1.0, >= 1.0.11)
+    daemons (1.1.9)
     diff-lcs (1.2.5)
+    eventmachine (1.0.7)
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
     ffi (1.9.6)
@@ -38,6 +41,10 @@ GEM
       rack (~> 1.4)
       rack-protection (~> 1.4)
       tilt (~> 1.3, >= 1.3.4)
+    thin (1.6.3)
+      daemons (~> 1.0, >= 1.0.9)
+      eventmachine (~> 1.0)
+      rack (~> 1.0)
     tilt (1.4.1)
 
 PLATFORMS
