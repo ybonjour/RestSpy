@@ -41,16 +41,14 @@ module RestSpy
     end
 
     at_exit do
-      for _, server in @@STARTED_SERVERS
-        server.stop
-      end
+      @@STARTED_SERVERS.each { |_, server| server.stop }
     end
 
     private
     attr_reader :port, :running
 
     def start_server_process!
-      @process = ChildProcess.build('bin/rest-spy', '-p', port.to_s)
+      @process = ChildProcess.build('rest-spy', '-p', port.to_s)
       @process.io.inherit!
       @process.start
     end

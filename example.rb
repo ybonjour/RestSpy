@@ -1,4 +1,6 @@
-$:.push File.expand_path("../lib", __FILE__)
+gem 'rest-spy'
+gem 'faraday'
+
 require 'rest-spy'
 require 'faraday'
 
