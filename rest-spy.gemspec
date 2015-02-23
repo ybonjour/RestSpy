@@ -20,10 +20,10 @@ Gem::Specification.new do |s|
   s.executables           = ['rest-spy']
   s.require_paths         = ['lib']
 
-  s.add_dependency 'sinatra', '~> 0'
-  s.add_dependency 'faraday', '~> 0'
-  s.add_dependency 'childprocess', '~> 0'
+  s.add_dependency 'sinatra'
+  s.add_dependency 'faraday'
+  s.add_dependency 'childprocess'
 
-  s.add_development_dependency 'rspec', '~> 0'
-  s.add_development_dependency 'rack-test', '~> 0'
+  s.add_development_dependency 'rspec'
+  s.add_development_dependency 'rack-test'
 end
