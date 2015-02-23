@@ -67,12 +67,8 @@ module RestSpy
       end
     end
 
-    def wait_until_server_running()
+    def wait_until_server_running
         wait_until { reachable? }
-    end
-
-    def wait_until_server_stopped()
-        wait_until { !reachable? }
     end
 
     def full_url(path)
