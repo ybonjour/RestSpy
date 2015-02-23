@@ -36,13 +36,20 @@ module RestSpy
       proxy = @@PROXIES.find_for_endpoint(capture, request.port)
 
       if double
-        [double.status_code, double.headers, [double.body]]
+        respond(double.status_code, double.headers, double.body)
       elsif proxy
         remote_response = ProxyServer.execute_remote_request(request, proxy.redirect_url, env)
-        [remote_response.status, remote_response.headers, [remote_response.body]]
+        respond(remote_response.status, remote_response.headers, remote_response.body)
       else
         404
       end
+    end
+
+    private
+    def respond(status_code, headers, body)
+      headers(headers)
+      body(body)
+      status(status_code)
     end
   end
 end

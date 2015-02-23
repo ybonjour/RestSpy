@@ -4,7 +4,7 @@ PATH
     rest-spy (0.0.1)
       childprocess
       faraday
-      sinatra (~> 1.4.0)
+      sinatra
 
 GEM
   remote: https://rubygems.org/
@@ -46,4 +46,4 @@ PLATFORMS
 DEPENDENCIES
   rack-test
   rest-spy!
-  rspec (~> 3.2.0)
+  rspec
