@@ -26,10 +26,6 @@ module RestSpy
         matches = m.matches('testfoo')
         expect(matches).to be false
       end
-
-      it "raises an error if no pattern provided" do
-        expect{ Matchable.new(nil) }.to raise_error(ArgumentError)
-      end
     end
   end
 end

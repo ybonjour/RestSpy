@@ -2,7 +2,6 @@ module RestSpy
   module Model
     class Matchable
       def initialize(pattern)
-        raise ArgumentError unless pattern
         @pattern = /^#{pattern}$/
       end
 

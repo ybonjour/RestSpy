@@ -1,7 +1,9 @@
 require 'faraday'
 module RestSpy
   module ProxyServer
-    def self.execute_remote_request(original_request, redirect_url, environment)
+    extend self
+
+    def execute_remote_request(original_request, redirect_url, environment)
       headers = extract_relevant_headers(environment)
       composed_url = URI::join(redirect_url, original_request.fullpath).to_s
 
@@ -14,13 +16,13 @@ module RestSpy
       end
     end
 
-    def self.extract_relevant_headers(environment)
+    def extract_relevant_headers(environment)
       Hash[environment
                .select { |k, _| k.start_with?("HTTP_") && k != "HTTP_HOST"}
                .map { |k, v| [k.sub(/^HTTP_/, ''), v] }]
     end
 
-    def self.http_client
+    def http_client
       HttpClient.new
     end
 

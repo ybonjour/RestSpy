@@ -36,6 +36,17 @@ module RestSpy
         expect(last_response.body).to be == 'test'
       end
 
+      it "should return correct status_code and header" do
+        headers = {'Authorization' => 'abcd'}
+        post '/doubles', {pattern: '/foo_full', body: 'test', status_code: 201, headers: headers}
+
+        get '/foo_full'
+
+        expect(last_response.status).to be 201
+        expect(last_response.body).to be == 'test'
+        expect(last_response.headers).to include headers
+      end
+
       it "should return 404 if no Double exists" do
         get '/bla'
 

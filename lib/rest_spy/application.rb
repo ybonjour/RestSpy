@@ -16,7 +16,10 @@ module RestSpy
 
       logger.info "[Double: #{params[:pattern]}]"
 
-      d = Model::Double.new(params[:pattern], params[:body], params[:status_code], params[:headers])
+      status_code = (params[:status_code] || 200).to_i
+      puts "Setting status code to #{status_code}"
+      headers = params[:headers] || {}
+      d = Model::Double.new(params[:pattern], params[:body], status_code, headers)
       @@DOUBLES.register(d, request.port)
 
       200
