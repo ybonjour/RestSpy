@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require 'rest-spy/version'
+require 'rest_spy/version'
 
 Gem::Specification.new do |s|
   s.name                  = "rest-spy"
