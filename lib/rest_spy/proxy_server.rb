@@ -31,6 +31,8 @@ module RestSpy
     def get_body(request)
       #TODO: Investigate better way to extract the body (support different type of data)
       JSON.parse(request.body.read)
+    rescue JSON::ParserError
+      request.body.read
     end
 
     def http_client
