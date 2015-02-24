@@ -23,7 +23,8 @@ module RestSpy
 
     context "execute remote request" do
       let(:redirect_url) {'https://www.google.com'}
-      let(:request_body) {{a_field: 'avalue'}}
+      let(:request_body_content) {"some content"}
+      let(:request_body) {double("request_body", :read => request_body_content)}
 
       let(:get_request) { double('get_request',
                                  :get? => true,
@@ -70,12 +71,12 @@ module RestSpy
       end
 
       it "should send a correct post request" do
-        expect(http_client).to receive(:post).with('https://www.google.com/stream', headers, request_body)
+        expect(http_client).to receive(:post).with('https://www.google.com/stream', headers, request_body_content)
         ProxyServer.execute_remote_request(post_request, redirect_url, environment)
       end
 
       it "should send a correct put request" do
-        expect(http_client).to receive(:put).with('https://www.google.com/stream', headers, request_body)
+        expect(http_client).to receive(:put).with('https://www.google.com/stream', headers, request_body_content)
         ProxyServer.execute_remote_request(put_request, redirect_url, environment)
       end
 

@@ -10,9 +10,9 @@ module RestSpy
       if original_request.get?
         http_client.get(composed_url, headers)
       elsif original_request.post?
-        http_client.post(composed_url, headers, original_request.body)
+        http_client.post(composed_url, headers, original_request.body.read)
       elsif original_request.put?
-        http_client.put(composed_url, headers, original_request.body)
+        http_client.put(composed_url, headers, original_request.body.read)
       elsif original_request.delete?
         http_client.delete(composed_url, headers)
       else
