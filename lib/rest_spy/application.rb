@@ -8,6 +8,7 @@ module RestSpy
 
     @@DOUBLES = Model::MatchableRegistry.new
     @@PROXIES = Model::MatchableRegistry.new
+    @@REWRITES = Model::MatchableRegistry.new
 
     set :server, %w[thin]
 
@@ -41,10 +42,22 @@ module RestSpy
       200
     end
 
+    post '/rewrites' do
+      return 400 unless params[:pattern] && params[:from] && params[:to]
+
+      logger.info "[Rewrite #{params[:pattern]}: #{params[:from]} -> #{params[:to]}]"
+
+      r = Model::Rewrite.new(params[:pattern], params[:from], params[:to])
+      @@REWRITES.register(r, request.port)
+
+      200
+    end
+
     get /(.*)/ do
       capture = params[:captures].first
       double = @@DOUBLES.find_for_endpoint(capture, request.port)
       proxy = @@PROXIES.find_for_endpoint(capture, request.port)
+      rewrite = @@REWRITES.find_for_endpoint(capture, request.port)
 
       if double
         logger.info "[Request #{capture} -> Double: #{double.status_code}]"
@@ -52,7 +65,8 @@ module RestSpy
       elsif proxy
         remote_response = ProxyServer.execute_remote_request(request, proxy.redirect_url, env)
         logger.info "[Request #{capture} -> Proxy #{remote_response.status}]"
-        body = rewrite(remote_response.body)
+
+        body = rewrite ? rewrite.apply(remote_response.body) : remote_response.body
         respond(remote_response.status, remote_response.headers, body)
       else
         404
@@ -64,12 +78,6 @@ module RestSpy
       headers(headers)
       body(body)
       status(status_code)
-    end
-
-    def rewrite(input)
-      from = 'http://api.soundcloud.dev:8989'
-      to = 'http://localhost:5678'
-      input.gsub(/#{from}/, "#{to}")
     end
 
     def logger

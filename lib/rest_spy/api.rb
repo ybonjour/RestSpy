@@ -34,6 +34,11 @@ module RestSpy
       Spy.new(server_url, port)
     end
 
+    def and_rewrite(from, to)
+      server.post '/rewrites', {pattern: '.*', from: from, to: to}
+      self
+    end
+
     def endpoint(endpoint_pattern)
       Endpoint.new(server, endpoint_pattern)
     end

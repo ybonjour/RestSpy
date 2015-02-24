@@ -84,7 +84,7 @@ module RestSpy
 
     context "when trying to hit a Proxy endpoint" do
       let(:response_headers) { {:field => 'aValue'} }
-      let(:response) { double("response", :body => 'asfdsafafds', :headers => response_headers, :status => 200) }
+      let(:response) { double("response", :body => 'A random body', :headers => response_headers, :status => 200) }
 
       it "should forward request to http_client if matching Proxy exists" do
         post '/proxies', {pattern: '/proxytest', redirect_url: 'http://www.google.com'}
@@ -92,7 +92,7 @@ module RestSpy
 
         get '/proxytest'
 
-        expect(last_response.body).to be == 'asfdsafafds'
+        expect(last_response.body).to be == 'A random body'
         expect(last_response.status).to be 200
         expect(last_response.headers).to include(response_headers)
       end
@@ -109,7 +109,44 @@ module RestSpy
 
         expect(last_response.status).to be 404
       end
+
+      it "should apply a rewrite if it exists" do
+        post '/proxies', {pattern: '/rewritten', redirect_url: 'http://www.google.com'}
+        post '/rewrites', {pattern: '/rewritten', from: 'random', to: 'arbitrary'}
+        expect(ProxyServer).to receive(:execute_remote_request).with(anything, 'http://www.google.com', anything).and_return(response)
+
+        get '/rewritten'
+
+        expect(last_response.body).to be == 'A arbitrary body'
+      end
     end
+
+    context "when posting a Rewrite" do
+      it "should be able to post a rewrite with correct parameters" do
+        post '/rewrites', {pattern: '/test', from: 'http://www.google.com', to: 'http://localhost:1234'}
+
+        expect(last_response).to be_ok
+      end
+
+      it "should return 400 if no pattern in params" do
+        post '/rewrites', {from: 'http://www.google.com', to: 'http://localhost:1234'}
+
+        expect(last_response.status).to be 400
+      end
+
+      it "should return 400 if no from field in params" do
+        post '/rewrites', {pattern: '/test', to: 'http://localhost:1234'}
+
+        expect(last_response.status).to be 400
+      end
+
+      it "should return 400 if no to field in params" do
+        post '/rewrites', {pattern: '/test', from: 'http://www.google.com'}
+
+        expect(last_response.status).to be 400
+      end
+    end
+
 
     context "Presedence" do
       it "should return the Double if a Proxy and a Double match the endpoint" do
