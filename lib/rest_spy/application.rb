@@ -15,10 +15,9 @@ module RestSpy
     post '/doubles' do
       return 400 unless params[:pattern] && params[:body]
 
-      logger.info "[Double: #{params[:pattern]}]"
+      logger.info "[#{request.port} - Double: #{params[:pattern]}]"
 
       status_code = (params[:status_code] || 200).to_i
-      puts "Setting status code to #{status_code}"
       headers = params[:headers] || {}
       d = Model::Double.new(params[:pattern], params[:body], status_code, headers)
       @@DOUBLES.register(d, request.port)
@@ -27,14 +26,14 @@ module RestSpy
     end
 
     delete '/doubles/all' do
-      logger.info "[Clear all doubles]"
+      logger.info "[#{request.port} - Clear all doubles]"
       @@DOUBLES.reset(request.port)
     end
 
     post '/proxies' do
       return 400 unless params[:pattern] && params[:redirect_url]
 
-      logger.info "[Proxy: #{params[:pattern]} -> #{params[:redirect_url]}]"
+      logger.info "[#{request.port} - Proxy: #{params[:pattern]} -> #{params[:redirect_url]}]"
 
       p = Model::Proxy.new(params[:pattern], params[:redirect_url])
       @@PROXIES.register(p, request.port)
@@ -45,7 +44,7 @@ module RestSpy
     post '/rewrites' do
       return 400 unless params[:pattern] && params[:from] && params[:to]
 
-      logger.info "[Rewrite #{params[:pattern]}: #{params[:from]} -> #{params[:to]}]"
+      logger.info "[#{request.port} - Rewrite #{params[:pattern]}: #{params[:from]} -> #{params[:to]}]"
 
       r = Model::Rewrite.new(params[:pattern], params[:from], params[:to])
       @@REWRITES.register(r, request.port)
@@ -61,11 +60,11 @@ module RestSpy
         rewrite = @@REWRITES.find_for_endpoint(capture, request.port)
 
         if double
-          logger.info "[Request #{capture} -> Double: #{double.status_code}]"
+          logger.info "[#{request.port} - #{request.request_method}: #{capture} -> Double: #{double.status_code}]"
           respond(double.status_code, double.headers, double.body)
         elsif proxy
           remote_response = ProxyServer.execute_remote_request(request, proxy.redirect_url, env)
-          logger.info "[Request #{capture} -> Proxy #{remote_response.status}]"
+          logger.info "[#{request.port} - #{request.request_method}: #{capture} -> Proxy #{remote_response.status}]"
 
           body = rewrite ? rewrite.apply(remote_response.body) : remote_response.body
           respond(remote_response.status, remote_response.headers, body)
