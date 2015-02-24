@@ -1,4 +1,6 @@
 require 'faraday'
+require 'json'
+
 module RestSpy
   module ProxyServer
     extend self
@@ -10,9 +12,9 @@ module RestSpy
       if original_request.get?
         http_client.get(composed_url, headers)
       elsif original_request.post?
-        http_client.post(composed_url, headers, original_request.body.read)
+        http_client.post(composed_url, headers, get_body(original_request))
       elsif original_request.put?
-        http_client.put(composed_url, headers, original_request.body.read)
+        http_client.put(composed_url, headers, get_body(original_request))
       elsif original_request.delete?
         http_client.delete(composed_url, headers)
       else
@@ -24,6 +26,11 @@ module RestSpy
       Hash[environment
                .select { |k, _| k.start_with?("HTTP_") && k != "HTTP_HOST"}
                .map { |k, v| [k.sub(/^HTTP_/, ''), v] }]
+    end
+
+    def get_body(request)
+      #TODO: Investigate better way to extract the body (support different type of data)
+      JSON.parse(request.body.read)
     end
 
     def http_client
