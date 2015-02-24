@@ -11,6 +11,10 @@ module RestSpy
         http_client.get(composed_url, headers)
       elsif original_request.post?
         http_client.post(composed_url, headers, original_request.body)
+      elsif original_request.put?
+        http_client.put(composed_url, headers, original_request.body)
+      elsif original_request.delete?
+        http_client.delete(composed_url, headers)
       else
         raise "#{original_request.request_method} requests are not supported."
       end
@@ -37,6 +41,19 @@ module RestSpy
         Faraday.new.post url do |req|
           req.headers = headers
           req.body = body
+        end
+      end
+
+      def put(url, headers, body)
+        Faraday.new.put url do |req|
+          req.headers = headers
+          req.body = body
+        end
+      end
+
+      def delete(url, headers)
+        Faraday.new.delete url do |req|
+          req.headers = headers
         end
       end
     end

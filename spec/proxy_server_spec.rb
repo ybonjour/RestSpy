@@ -23,13 +23,41 @@ module RestSpy
 
     context "execute remote request" do
       let(:redirect_url) {'https://www.google.com'}
-      let(:get_request) { double('get_request', :get? => true, :fullpath => '/stream?limit=10') }
-      let(:post_request_body) {{a_field: 'avalue'}}
-      let(:post_request) { double('post_request', :get? => false, :post? => true,
-                                  :fullpath => '/stream', :body => post_request_body)
-      }
+      let(:request_body) {{a_field: 'avalue'}}
+
+      let(:get_request) { double('get_request',
+                                 :get? => true,
+                                 :post? => false,
+                                 :put? => false,
+                                 :delete? => false,
+                                 :fullpath => '/stream?limit=10',) }
+
+      let(:post_request) { double('post_request',
+                                  :get? => false,
+                                  :post? => true,
+                                  :put? => false,
+                                  :delete? => false,
+                                  :fullpath => '/stream',
+                                  :body => request_body) }
+
+      let(:put_request) { double('put_request',
+                                  :get? => false,
+                                  :post? => false,
+                                  :put? => true,
+                                  :delete? => false,
+                                  :fullpath => '/stream',
+                                  :body => request_body) }
+
+      let(:delete_request) { double('delete_request',
+                                 :get? => false,
+                                 :post? => false,
+                                 :put? => false,
+                                 :delete? => true,
+                                 :fullpath => '/stream?limit=10',) }
+
       let(:headers) { {'Authorization' => 'abcd'} }
       let(:environment) { {'HTTP_Authorization' => 'abcd'} }
+
       let(:http_client) {
         http_client = double('http_client')
         allow(ProxyServer).to receive(:http_client).and_return(http_client)
@@ -42,8 +70,18 @@ module RestSpy
       end
 
       it "should send a correct post request" do
-        expect(http_client).to receive(:post).with('https://www.google.com/stream', headers, post_request_body)
+        expect(http_client).to receive(:post).with('https://www.google.com/stream', headers, request_body)
         ProxyServer.execute_remote_request(post_request, redirect_url, environment)
+      end
+
+      it "should send a correct put request" do
+        expect(http_client).to receive(:put).with('https://www.google.com/stream', headers, request_body)
+        ProxyServer.execute_remote_request(put_request, redirect_url, environment)
+      end
+
+      it "should send a correct delete request" do
+        expect(http_client).to receive(:delete).with('https://www.google.com/stream?limit=10', headers)
+        ProxyServer.execute_remote_request(delete_request, redirect_url, environment)
       end
     end
   end
