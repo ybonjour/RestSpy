@@ -1,4 +1,4 @@
-require 'rest-spy/proxy_server'
+require 'rest_spy/proxy_server'
 
 module RestSpy
   describe ProxyServer do

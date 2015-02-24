@@ -2,33 +2,37 @@ require_relative 'model'
 require_relative 'application'
 require 'childprocess'
 
+at_exit do
+  RestSpy::Server.stop_all_servers
+end
+
 module RestSpy
   class Server
-    @@STARTED_SERVERS = {}
-    @@SERVERS_LOCK = Mutex.new
-
     def initialize(port)
       @port = port
-      @running_lock = Mutex.new
+    end
+
+    def self.stop_all_servers
+      started_servers.each { |_, server| server.stop }
     end
 
     def start
-      @@SERVERS_LOCK.synchronize {
-        if @@STARTED_SERVERS.include? port
+      synchronized {
+        if started_servers.include? port
           raise 'There was already a server started on this port.'
         end
-        @process = start_server_process!
+        self.process = start_server_process!
         wait_until_server_running
 
-        @@STARTED_SERVERS[port] = self
+        started_servers[port] = self
       }
     end
 
     def stop
-      @@SERVERS_LOCK.synchronize {
-        return unless @@STARTED_SERVERS.include? port
+      synchronized {
+        return unless started_servers.include? port
         stop_server_process
-        @@STARTED_SERVERS.delete(port)
+        started_servers.delete(port)
       }
     end
 
@@ -40,21 +44,19 @@ module RestSpy
       Faraday.new.delete full_url(endpoint)
     end
 
-    at_exit do
-      @@STARTED_SERVERS.each { |_, server| server.stop }
-    end
-
     private
-    attr_reader :port, :running
+    attr_reader :port
+    attr_accessor :process
 
     def start_server_process!
-      @process = ChildProcess.build('rest-spy', '-p', port.to_s)
-      @process.io.inherit!
-      @process.start
+      process = ChildProcess.build('rest-spy', '-p', port.to_s)
+      process.io.inherit!
+      process.start
+      process
     end
 
     def stop_server_process
-      @process.stop
+      process.stop
     end
 
     def wait_until(timeout=3.0, sleep=0.1, &block)
@@ -85,6 +87,22 @@ module RestSpy
       rescue Faraday::ConnectionFailed
         false
       end
+    end
+
+    def synchronized(&block)
+      started_servers_mutex.synchronize { block.call }
+    end
+
+    def started_servers
+      self.class.started_servers
+    end
+
+    def self.started_servers
+      @@started_servers ||= {}
+    end
+
+    def started_servers_mutex
+      @@started_servers_mutex = Mutex.new
     end
   end
 end

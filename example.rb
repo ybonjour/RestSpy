@@ -1,7 +1,6 @@
-gem 'rest-spy'
-gem 'faraday'
+require 'bundler/setup'
 
-require 'rest-spy'
+require 'rest_spy'
 require 'faraday'
 
 facebook = RestSpy::Spy.server_on_local_port('http://www.facebook.com', 1234)

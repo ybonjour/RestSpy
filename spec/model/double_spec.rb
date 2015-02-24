@@ -1,4 +1,4 @@
-require 'rest-spy/model'
+require 'rest_spy/model'
 
 module RestSpy
   module Model

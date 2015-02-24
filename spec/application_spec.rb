@@ -1,6 +1,6 @@
 require File.expand_path '../spec_helper.rb', __FILE__
-require 'rest-spy/application'
-require 'rest-spy/proxy_server'
+require 'rest_spy/application'
+require 'rest_spy/proxy_server'
 
 module RestSpy
 

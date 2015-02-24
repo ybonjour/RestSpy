@@ -2,7 +2,7 @@
 
 $:.push File.expand_path('../../lib', __FILE__)
 
-require 'rest-spy/application'
+require 'rest_spy/application'
 require 'optparse'
 
 options = {}

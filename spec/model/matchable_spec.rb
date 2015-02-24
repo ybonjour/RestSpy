@@ -1,4 +1,4 @@
-require 'rest-spy/model/matchable'
+require 'rest_spy/model/matchable'
 
 module RestSpy
   module Model

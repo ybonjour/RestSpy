@@ -1,4 +1,4 @@
-require 'rest-spy/model/proxy'
+require 'rest_spy/model/proxy'
 
 module RestSpy
   module Model

@@ -2,7 +2,7 @@ $:.unshift(File.expand_path('../../lib'), __FILE__)
 
 require 'rack/test'
 require 'rspec'
-require 'rest-spy/application'
+require 'rest_spy/application'
 
 ENV['RACK_ENV'] = 'test'
 

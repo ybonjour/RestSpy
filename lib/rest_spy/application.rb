@@ -1,6 +1,7 @@
 require 'sinatra'
-require 'rest-spy/model'
-require 'rest-spy/proxy_server'
+require 'logger'
+require_relative 'model'
+require_relative 'proxy_server'
 
 module RestSpy
   class Application < Sinatra::Base
@@ -13,7 +14,7 @@ module RestSpy
     post '/doubles' do
       return 400 unless params[:pattern] && params[:body]
 
-      $stderr.puts "[Double: #{params[:pattern]}]"
+      logger.info "[Double: #{params[:pattern]}]"
 
       d = Model::Double.new(params[:pattern], params[:body], params[:status_code], params[:headers])
       @@DOUBLES.register(d, request.port)
@@ -22,14 +23,14 @@ module RestSpy
     end
 
     delete '/doubles/all' do
-      $stderr.puts "[Clear all doubles]"
+      logger.info "[Clear all doubles]"
       @@DOUBLES.reset(request.port)
     end
 
     post '/proxies' do
       return 400 unless params[:pattern] && params[:redirect_url]
 
-      $stderr.puts "[Proxy: #{params[:pattern]} -> #{params[:redirect_url]}]"
+      logger.info "[Proxy: #{params[:pattern]} -> #{params[:redirect_url]}]"
 
       p = Model::Proxy.new(params[:pattern], params[:redirect_url])
       @@PROXIES.register(p, request.port)
@@ -43,11 +44,11 @@ module RestSpy
       proxy = @@PROXIES.find_for_endpoint(capture, request.port)
 
       if double
-        $stderr.puts "[Request #{capture} -> Double: #{double.status_code}]"
+        logger.info "[Request #{capture} -> Double: #{double.status_code}]"
         respond(double.status_code, double.headers, double.body)
       elsif proxy
         remote_response = ProxyServer.execute_remote_request(request, proxy.redirect_url, env)
-        $stderr.puts "[Request #{capture} -> Proxy #{remote_response.status}]"
+        logger.info "[Request #{capture} -> Proxy #{remote_response.status}]"
         body = rewrite(remote_response.body)
         respond(remote_response.status, remote_response.headers, body)
       else
@@ -66,6 +67,10 @@ module RestSpy
       from = 'http://api.soundcloud.dev:8989'
       to = 'http://localhost:5678'
       input.gsub(/#{from}/, "#{to}")
+    end
+
+    def logger
+      @logger ||= Logger.new(STDOUT)
     end
   end
 end
