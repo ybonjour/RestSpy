@@ -1,13 +1,16 @@
 require 'faraday'
 require 'json'
+require_relative 'response_rewriter'
 
 module RestSpy
   module ProxyServer
     extend self
 
-    def execute_remote_request(original_request, redirect_url, environment)
+    def execute_remote_request(original_request, redirect_url, environment, rewrites)
       headers = extract_relevant_headers(environment)
       composed_url = URI::join(redirect_url, original_request.fullpath).to_s
+
+      http_client = http_client(rewrites)
 
       if original_request.get?
         http_client.get(composed_url, headers)
@@ -35,36 +38,46 @@ module RestSpy
       request.body.read
     end
 
-    def http_client
-      HttpClient.new
+    def http_client(rewrites)
+      HttpClient.new(rewrites)
     end
 
     class HttpClient
+      def initialize(rewrites=[])
+        @connection = Faraday.new do |conn|
+          conn.use RestSpy::ResponseRewriter, rewrites: rewrites
+          conn.adapter Faraday.default_adapter
+        end
+      end
+
       def get(url, headers)
-        Faraday.new.get url do |req|
+        connection.get url do |req|
           req.headers = headers
         end
       end
 
       def post(url, headers, body)
-        Faraday.new.post url do |req|
+        connection.post url do |req|
           req.headers = headers
           req.body = body
         end
       end
 
       def put(url, headers, body)
-        Faraday.new.put url do |req|
+        connection.put url do |req|
           req.headers = headers
           req.body = body
         end
       end
 
       def delete(url, headers)
-        Faraday.new.delete url do |req|
+        connection.delete url do |req|
           req.headers = headers
         end
       end
+
+      private
+      attr_reader :connection
     end
   end
 end

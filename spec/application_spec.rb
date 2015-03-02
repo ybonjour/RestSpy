@@ -86,9 +86,20 @@ module RestSpy
       let(:response_headers) { {:field => 'aValue'} }
       let(:response) { double("response", :body => 'A random body', :headers => response_headers, :status => 200) }
 
+      RSpec::Matchers.define :array_with_rewrites do |expected|
+        match do |actual|
+          expect(expected.size).to be == actual.size
+
+          (0..actual.size - 1).each { |i|
+            expect(expected[i].from).to be == actual[i].from
+            expect(expected[i].to).to be == actual[i].to
+          }
+        end
+      end
+
       it "should forward request to http_client if matching Proxy exists" do
         post '/proxies', {pattern: '/proxytest', redirect_url: 'http://www.google.com'}
-        expect(ProxyServer).to receive(:execute_remote_request).with(anything, 'http://www.google.com', anything).and_return(response)
+        expect(ProxyServer).to receive(:execute_remote_request).with(anything, 'http://www.google.com', anything, []).and_return(response)
 
         get '/proxytest'
 
@@ -110,14 +121,21 @@ module RestSpy
         expect(last_response.status).to be 404
       end
 
-      it "should apply a rewrite if it exists" do
+      it "should pass on all matching rewrites to proxy" do
+        rewrite1 = Model::Rewrite.new('/rewritten', 'random', 'arbitrary')
+        rewrite2 = Model::Rewrite.new('/rewritten', 'body', 'text')
+
         post '/proxies', {pattern: '/rewritten', redirect_url: 'http://www.google.com'}
-        post '/rewrites', {pattern: '/rewritten', from: 'random', to: 'arbitrary'}
-        expect(ProxyServer).to receive(:execute_remote_request).with(anything, 'http://www.google.com', anything).and_return(response)
+        post '/rewrites', {pattern: '/rewritten', from: rewrite1.from, to: rewrite1.to}
+        post '/rewrites', {pattern: '/rewritten', from: rewrite2.from, to: rewrite2.to}
+
+        expect(ProxyServer).to receive(:execute_remote_request)
+                                .with(anything, 'http://www.google.com', anything, array_with_rewrites([rewrite1, rewrite2]))
+                                .and_return(response)
 
         get '/rewritten'
 
-        expect(last_response.body).to be == 'A arbitrary body'
+        expect(last_response).to be_ok
       end
     end
 

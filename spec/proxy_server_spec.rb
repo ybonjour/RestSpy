@@ -58,35 +58,36 @@ module RestSpy
 
       let(:headers) { {'Authorization' => 'abcd'} }
       let(:environment) { {'HTTP_Authorization' => 'abcd'} }
+      let(:rewrites) { [double("rewrite")] }
 
       let(:http_client) {
         http_client = double('http_client')
-        allow(ProxyServer).to receive(:http_client).and_return(http_client)
+        allow(ProxyServer).to receive(:http_client).with(rewrites).and_return(http_client)
         http_client
       }
 
       it "should send a correct get request" do
         expect(http_client).to receive(:get).with('https://www.google.com/stream?limit=10', headers)
-        ProxyServer.execute_remote_request(get_request, redirect_url, environment)
+        ProxyServer.execute_remote_request(get_request, redirect_url, environment, rewrites)
       end
 
       it "should send a correct post request" do
         parsed_body = double("parsed_body")
         expect(JSON).to receive(:parse).with(request_body_content).and_return(parsed_body)
         expect(http_client).to receive(:post).with('https://www.google.com/stream', headers, parsed_body)
-        ProxyServer.execute_remote_request(post_request, redirect_url, environment)
+        ProxyServer.execute_remote_request(post_request, redirect_url, environment, rewrites)
       end
 
       it "should send a correct put request" do
         parsed_body = double("parsed_body")
         expect(JSON).to receive(:parse).with(request_body_content).and_return(parsed_body)
         expect(http_client).to receive(:put).with('https://www.google.com/stream', headers, parsed_body)
-        ProxyServer.execute_remote_request(put_request, redirect_url, environment)
+        ProxyServer.execute_remote_request(put_request, redirect_url, environment, rewrites)
       end
 
       it "should send a correct delete request" do
         expect(http_client).to receive(:delete).with('https://www.google.com/stream?limit=10', headers)
-        ProxyServer.execute_remote_request(delete_request, redirect_url, environment)
+        ProxyServer.execute_remote_request(delete_request, redirect_url, environment, rewrites)
       end
     end
   end

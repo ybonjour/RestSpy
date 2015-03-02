@@ -54,22 +54,25 @@ module RestSpy
 
     %w{get post put delete}.each do |method|
       send method, /(.*)/ do
-        capture = params[:captures].first
-        double = @@DOUBLES.find_for_endpoint(capture, request.port)
-        proxy = @@PROXIES.find_for_endpoint(capture, request.port)
-        rewrite = @@REWRITES.find_for_endpoint(capture, request.port)
+        begin
+          capture = params[:captures].first
+          double = @@DOUBLES.find_for_endpoint(capture, request.port)
+          proxy = @@PROXIES.find_for_endpoint(capture, request.port)
+          rewrites = @@REWRITES.find_all_for_endpoint(capture, request.port)
 
-        if double
-          logger.info "[#{request.port} - #{request.request_method}: #{capture} -> Double: #{double.status_code}]"
-          respond(double.status_code, double.headers, double.body)
-        elsif proxy
-          remote_response = ProxyServer.execute_remote_request(request, proxy.redirect_url, env)
-          logger.info "[#{request.port} - #{request.request_method}: #{capture} -> Proxy #{remote_response.status}]"
-
-          body = rewrite ? rewrite.apply(remote_response.body) : remote_response.body
-          respond(remote_response.status, remote_response.headers, body)
-        else
-          404
+          if double
+            logger.info "[#{request.port} - #{request.request_method}: #{capture} -> Double: #{double.status_code}]"
+            respond(double.status_code, double.headers, double.body)
+          elsif proxy
+            remote_response = ProxyServer.execute_remote_request(request, proxy.redirect_url, env, rewrites)
+            logger.info "[#{request.port} - #{request.request_method}: #{capture} -> Proxy #{remote_response.status}]"
+            respond(remote_response.status, remote_response.headers, remote_response.body)
+          else
+            404
+          end
+        rescue Exception => e
+          logger.error(e)
+          raise e
         end
       end
     end

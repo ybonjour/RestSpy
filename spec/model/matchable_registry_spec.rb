@@ -64,6 +64,39 @@ module RestSpy
         result = registry.find_for_endpoint('/test', port)
         expect(result).to be element
       end
+
+      context "find all elements" do
+        it "returns an empty list if no elements are registered" do
+          endpoints = registry.find_all_for_endpoint('/test', 1234)
+          expect(endpoints).to be == []
+        end
+
+        it "does not find a non-matching endpoint" do
+          registry.register(element, port)
+
+          endpoints = registry.find_all_for_endpoint('/foo', port)
+
+          expect(endpoints).to be == []
+        end
+
+        it "does not find a matching endpoint on another port" do
+          registry.register(element, port)
+
+          endpoints = registry.find_all_for_endpoint('/test', 4567)
+
+          expect(endpoints).to be == []
+        end
+
+        it "finds all matching endpionts" do
+          registry.register(element, port)
+          element2 = Matchable.new('/.*')
+          registry.register(element2, port)
+
+          endpoints = registry.find_all_for_endpoint('/test', port)
+
+          expect(endpoints).to be == [element, element2]
+        end
+      end
     end
   end
 end

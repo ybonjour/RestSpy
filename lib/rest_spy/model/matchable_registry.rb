@@ -17,9 +17,13 @@ module RestSpy
         end
 
         def find_for_endpoint(endpoint, port)
-          return nil unless @doubles[port]
+          find_all_for_endpoint(endpoint, port).first
+        end
 
-          @doubles[port].select { |d| d.matches(endpoint) }.first
+        def find_all_for_endpoint(endpoint, port)
+          return [] unless @doubles[port]
+
+          @doubles[port].select { |d| d.matches(endpoint) }
         end
 
         def reset(port)
