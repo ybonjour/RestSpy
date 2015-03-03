@@ -31,6 +31,7 @@ module RestSpy
                                  :post? => false,
                                  :put? => false,
                                  :delete? => false,
+                                 :head? => false,
                                  :fullpath => '/stream?limit=10',) }
 
       let(:post_request) { double('post_request',
@@ -38,6 +39,7 @@ module RestSpy
                                   :post? => true,
                                   :put? => false,
                                   :delete? => false,
+                                  :head? => false,
                                   :fullpath => '/stream',
                                   :body => request_body) }
 
@@ -46,6 +48,7 @@ module RestSpy
                                   :post? => false,
                                   :put? => true,
                                   :delete? => false,
+                                  :head? => false,
                                   :fullpath => '/stream',
                                   :body => request_body) }
 
@@ -54,7 +57,16 @@ module RestSpy
                                  :post? => false,
                                  :put? => false,
                                  :delete? => true,
-                                 :fullpath => '/stream?limit=10',) }
+                                 :head? => false,
+                                 :fullpath => '/stream?limit=10') }
+
+      let(:head_request) { double('head_request',
+                                 :get? => false,
+                                 :post? => false,
+                                 :put? => false,
+                                 :delete? => false,
+                                 :head? => true,
+                                 :fullpath => '/stream') }
 
       let(:headers) { {'Authorization' => 'abcd'} }
       let(:environment) { {'HTTP_Authorization' => 'abcd'} }
@@ -68,26 +80,36 @@ module RestSpy
 
       it "should send a correct get request" do
         expect(http_client).to receive(:get).with('https://www.google.com/stream?limit=10', headers)
+
         ProxyServer.execute_remote_request(get_request, redirect_url, environment, rewrites)
       end
 
       it "should send a correct post request" do
         parsed_body = double("parsed_body")
-        expect(JSON).to receive(:parse).with(request_body_content).and_return(parsed_body)
+        expect(ProxyServer).to receive(:get_body).with(post_request).and_return(parsed_body)
         expect(http_client).to receive(:post).with('https://www.google.com/stream', headers, parsed_body)
+
         ProxyServer.execute_remote_request(post_request, redirect_url, environment, rewrites)
       end
 
       it "should send a correct put request" do
         parsed_body = double("parsed_body")
-        expect(JSON).to receive(:parse).with(request_body_content).and_return(parsed_body)
+        expect(ProxyServer).to receive(:get_body).with(put_request).and_return(parsed_body)
         expect(http_client).to receive(:put).with('https://www.google.com/stream', headers, parsed_body)
+
         ProxyServer.execute_remote_request(put_request, redirect_url, environment, rewrites)
       end
 
       it "should send a correct delete request" do
         expect(http_client).to receive(:delete).with('https://www.google.com/stream?limit=10', headers)
+
         ProxyServer.execute_remote_request(delete_request, redirect_url, environment, rewrites)
+      end
+
+      it "should send a correct head request" do
+        expect(http_client).to receive(:head).with('https://www.google.com/stream', headers)
+
+        ProxyServer.execute_remote_request(head_request, redirect_url, environment, rewrites)
       end
     end
   end

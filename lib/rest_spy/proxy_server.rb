@@ -21,6 +21,8 @@ module RestSpy
         http_client.put(composed_url, headers, get_body(original_request))
       elsif original_request.delete?
         http_client.delete(composed_url, headers)
+      elsif original_request.head?
+        http_client.head(composed_url, headers)
       else
         raise "#{original_request.request_method} requests are not supported."
       end
@@ -50,6 +52,12 @@ module RestSpy
           conn.request :url_encoded
           conn.use RestSpy::ResponseRewriter, rewrites: rewrites
           conn.adapter :net_http
+        end
+      end
+
+      def head(url, headers)
+        connection.get url do |req|
+          req.headers = headers
         end
       end
 

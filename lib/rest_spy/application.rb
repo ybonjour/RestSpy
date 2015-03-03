@@ -52,7 +52,7 @@ module RestSpy
       200
     end
 
-    %w{get post put delete}.each do |method|
+    %w{get post put delete head}.each do |method|
       send method, /(.*)/ do
         begin
           capture = params[:captures].first

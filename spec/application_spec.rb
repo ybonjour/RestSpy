@@ -108,6 +108,15 @@ module RestSpy
         expect(last_response.headers).to include(response_headers)
       end
 
+      it "should forward a head request" do
+        post '/proxies', {pattern: '/proxytest', redirect_url: 'http://www.google.com'}
+        expect(ProxyServer).to receive(:execute_remote_request).with(anything, 'http://www.google.com', anything, []).and_return(response)
+
+        head '/proxytest'
+
+        expect(last_response).to be_ok
+      end
+
       it "should return 404 if no Proxy exists" do
         get '/bla'
 
