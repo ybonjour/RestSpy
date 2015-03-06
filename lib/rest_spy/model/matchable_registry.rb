@@ -17,7 +17,7 @@ module RestSpy
         end
 
         def find_for_endpoint(endpoint, port)
-          find_all_for_endpoint(endpoint, port).first
+          find_all_for_endpoint(endpoint, port).last
         end
 
         def find_all_for_endpoint(endpoint, port)

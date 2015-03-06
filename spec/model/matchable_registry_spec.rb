@@ -37,14 +37,14 @@ module RestSpy
         expect(result).to be nil
       end
 
-      it "should return first element if two elements are matching" do
+      it "should return last added element if two elements are matching" do
         registry.register(element, port)
         element2 = Matchable.new('/test')
         registry.register(element2, port)
 
         result = registry.find_for_endpoint('/test', port)
 
-        expect(result).to be element
+        expect(result).to be element2
       end
 
       it "removes all elements for a port if reset" do
