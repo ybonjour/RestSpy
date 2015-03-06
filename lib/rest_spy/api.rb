@@ -15,8 +15,16 @@ module RestSpy
       create_double(status_code, headers, body)
     end
 
+    def should_proxy_to(redirect_url)
+      create_proxy(redirect_url)
+    end
+
     private
     attr_reader :server, :path_pattern
+
+    def create_proxy(redirect_url)
+      server.post '/proxies', {pattern: path_pattern, redirect_url: redirect_url}
+    end
 
     def create_double(status_code, headers, body)
       server.post('/doubles', {:pattern => path_pattern, :status_code => status_code, :headers=>headers, :body => body})
@@ -27,7 +35,7 @@ module RestSpy
     def initialize(server_url, local_port)
       @server = Server.new(local_port)
       @server.start
-      @server.post '/proxies', {pattern: '.*', redirect_url: server_url}
+      endpoint('.*').should_proxy_to server_url
     end
 
     def self.server_on_local_port(server_url, port)
