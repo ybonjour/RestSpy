@@ -2,6 +2,7 @@ require 'faraday'
 require 'faraday_middleware'
 require 'json'
 require_relative 'response_rewriter'
+require_relative 'request_forwarder'
 
 module RestSpy
   module ProxyServer
@@ -11,14 +12,14 @@ module RestSpy
       headers = extract_relevant_headers(environment)
       composed_url = URI::join(redirect_url, original_request.fullpath).to_s
 
-      http_client = http_client(rewrites)
+      http_client = http_client(rewrites, environment['CONTENT_TYPE'])
 
       if original_request.get?
         http_client.get(composed_url, headers)
       elsif original_request.post?
-        http_client.post(composed_url, headers, get_body(original_request))
+        http_client.post(composed_url, headers, original_request.body.read)
       elsif original_request.put?
-        http_client.put(composed_url, headers, get_body(original_request))
+        http_client.put(composed_url, headers, original_request.body.read)
       elsif original_request.delete?
         http_client.delete(composed_url, headers)
       elsif original_request.head?
@@ -29,16 +30,15 @@ module RestSpy
     end
 
     def extract_relevant_headers(environment)
-      Hash[environment
+      headers = Hash[environment
                .select { |k, _| k.start_with?("HTTP_") && k != "HTTP_HOST"}
                .map { |k, v| [k.sub(/^HTTP_/, ''), v] }]
-    end
 
-    def get_body(request)
-      #TODO: Investigate better way to extract the body (support different type of data)
-      JSON.parse(request.body.read)
-    rescue JSON::ParserError
-      request.body.read
+      if environment['CONTENT_TYPE']
+        headers['CONTENT_TYPE'] = environment['CONTENT_TYPE']
+      end
+
+      headers
     end
 
     def http_client(rewrites)
@@ -48,8 +48,6 @@ module RestSpy
     class HttpClient
       def initialize(rewrites=[])
         @connection = Faraday.new do |conn|
-          conn.request :multipart
-          conn.request :url_encoded
           conn.use RestSpy::ResponseRewriter, rewrites: rewrites
           conn.adapter :net_http
         end
