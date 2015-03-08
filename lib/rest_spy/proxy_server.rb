@@ -2,7 +2,6 @@ require 'faraday'
 require 'faraday_middleware'
 require 'json'
 require_relative 'response_rewriter'
-require_relative 'request_forwarder'
 
 module RestSpy
   module ProxyServer
@@ -12,7 +11,7 @@ module RestSpy
       headers = extract_relevant_headers(environment)
       composed_url = URI::join(redirect_url, original_request.fullpath).to_s
 
-      http_client = http_client(rewrites, environment['CONTENT_TYPE'])
+      http_client = http_client(rewrites)
 
       if original_request.get?
         http_client.get(composed_url, headers)

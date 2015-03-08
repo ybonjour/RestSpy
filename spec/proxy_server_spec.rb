@@ -85,17 +85,13 @@ module RestSpy
       end
 
       it "should send a correct post request" do
-        parsed_body = double("parsed_body")
-        expect(ProxyServer).to receive(:get_body).with(post_request).and_return(parsed_body)
-        expect(http_client).to receive(:post).with('https://www.google.com/stream', headers, parsed_body)
+        expect(http_client).to receive(:post).with('https://www.google.com/stream', headers, request_body_content)
 
         ProxyServer.execute_remote_request(post_request, redirect_url, environment, rewrites)
       end
 
       it "should send a correct put request" do
-        parsed_body = double("parsed_body")
-        expect(ProxyServer).to receive(:get_body).with(put_request).and_return(parsed_body)
-        expect(http_client).to receive(:put).with('https://www.google.com/stream', headers, parsed_body)
+        expect(http_client).to receive(:put).with('https://www.google.com/stream', headers, request_body_content)
 
         ProxyServer.execute_remote_request(put_request, redirect_url, environment, rewrites)
       end
