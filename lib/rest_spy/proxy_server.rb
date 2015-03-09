@@ -16,10 +16,7 @@ module RestSpy
       if original_request.get?
         http_client.get(composed_url, headers)
       elsif original_request.post?
-        body = original_request.body.read
-        puts "Body: #{body}"
-        puts "Request content type: #{original_request.content_type}"
-        http_client.post(composed_url, headers, body)
+        http_client.post(composed_url, headers, original_request.body.read)
       elsif original_request.put?
         http_client.put(composed_url, headers, original_request.body.read)
       elsif original_request.delete?
@@ -43,7 +40,6 @@ module RestSpy
         headers['CONTENT-TYPE'] = environment['CONTENT_TYPE']
       end
 
-      puts "Headers: #{headers}"
       headers
     end
 
