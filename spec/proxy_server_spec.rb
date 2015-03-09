@@ -19,6 +19,22 @@ module RestSpy
 
         expect(headers).to be {}
       end
+
+      it "should convert underscores to dashes" do
+        env = {'HTTP_ACCEPT_LANGUAGE' => 'en-US'}
+
+        headers = ProxyServer.extract_relevant_headers(env)
+
+        expect(headers).to be == {'ACCEPT-LANGUAGE' => 'en-US'}
+      end
+
+      it "should extract content type" do
+        env = {'CONTENT_TYPE' => 'application/json'}
+
+        headers = ProxyServer.extract_relevant_headers(env)
+
+        expect(headers).to be == {'CONTENT-TYPE' => 'application/json'}
+      end
     end
 
     context "execute remote request" do

@@ -16,7 +16,10 @@ module RestSpy
       if original_request.get?
         http_client.get(composed_url, headers)
       elsif original_request.post?
-        http_client.post(composed_url, headers, original_request.body.read)
+        body = original_request.body.read
+        puts "Body: #{body}"
+        puts "Request content type: #{original_request.content_type}"
+        http_client.post(composed_url, headers, body)
       elsif original_request.put?
         http_client.put(composed_url, headers, original_request.body.read)
       elsif original_request.delete?
@@ -31,12 +34,16 @@ module RestSpy
     def extract_relevant_headers(environment)
       headers = Hash[environment
                .select { |k, _| k.start_with?("HTTP_") && k != "HTTP_HOST"}
-               .map { |k, v| [k.sub(/^HTTP_/, ''), v] }]
+               .map do |k, v|
+                  header_field = k.sub(/^HTTP_/, '').gsub('_', '-')
+                  [header_field, v]
+               end]
 
       if environment['CONTENT_TYPE']
-        headers['CONTENT_TYPE'] = environment['CONTENT_TYPE']
+        headers['CONTENT-TYPE'] = environment['CONTENT_TYPE']
       end
 
+      puts "Headers: #{headers}"
       headers
     end
 
