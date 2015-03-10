@@ -1,7 +1,6 @@
 require 'faraday'
-require 'faraday_middleware'
 require 'json'
-require_relative 'response_rewriter'
+require_relative 'response_rewrite_middleware'
 
 module RestSpy
   module ProxyServer
@@ -50,7 +49,7 @@ module RestSpy
     class HttpClient
       def initialize(rewrites=[])
         @connection = Faraday.new do |conn|
-          conn.use RestSpy::ResponseRewriter, rewrites: rewrites
+          conn.use RestSpy::ResponseRewriteMiddleware, rewrites: rewrites
           conn.adapter :net_http
         end
       end

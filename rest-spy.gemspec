@@ -22,7 +22,6 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'sinatra'
   s.add_dependency 'faraday'
-  s.add_dependency 'faraday_middleware'
   s.add_dependency 'childprocess'
   s.add_dependency 'thin'
 

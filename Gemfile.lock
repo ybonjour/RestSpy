@@ -4,7 +4,6 @@ PATH
     rest-spy (0.0.1)
       childprocess
       faraday
-      faraday_middleware
       sinatra
       thin
 
@@ -18,8 +17,6 @@ GEM
     eventmachine (1.0.7)
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
-    faraday_middleware (0.9.1)
-      faraday (>= 0.7.4, < 0.10)
     ffi (1.9.6)
     multipart-post (2.0.0)
     rack (1.6.0)
@@ -31,15 +28,15 @@ GEM
       rspec-core (~> 3.2.0)
       rspec-expectations (~> 3.2.0)
       rspec-mocks (~> 3.2.0)
-    rspec-core (3.2.0)
+    rspec-core (3.2.1)
       rspec-support (~> 3.2.0)
     rspec-expectations (3.2.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.2.0)
-    rspec-mocks (3.2.0)
+    rspec-mocks (3.2.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.2.0)
-    rspec-support (3.2.1)
+    rspec-support (3.2.2)
     sinatra (1.4.5)
       rack (~> 1.4)
       rack-protection (~> 1.4)

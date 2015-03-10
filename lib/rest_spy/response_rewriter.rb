@@ -1,26 +1,62 @@
-require 'faraday'
+require 'zlib'
 
 module RestSpy
-  class ResponseRewriter < Faraday::Middleware
+  class ResponseRewriter
+      def initialize(rewrites)
+        @rewrites = rewrites
+      end
 
-    def initialize(app, options=[])
-      super(app)
-      @rewrites = options[:rewrites] || []
-    end
+      def rewrite(input, encoding)
+        return input unless rewrites.size > 0
 
-    def call(request_env)
-      @app.call(request_env).on_complete do |response_env|
-        if response_env[:body]
-          response_env[:body] = apply_rewrites(response_env[:body])
+        input = decode(input, encoding)
+        input = rewrites.inject(input) { |input, r| r.apply(input) }
+        encode(input, encoding)
+      end
+
+      private
+      attr_reader :rewrites
+
+      def decode(input, encoding)
+        case encoding
+          when 'gzip'
+            ungzip(input)
+          when 'deflate'
+            inflate(input)
+          else
+            input
         end
       end
-    end
 
-    private
-    attr_reader :rewrites
+      def encode(input, encoding)
+        case encoding
+          when 'gzip'
+            gzip(input)
+          when 'deflate'
+            deflate(input)
+          else
+            input
+        end
+      end
 
-    def apply_rewrites(body)
-      rewrites.inject(body) { |body, r| r.apply(body) }
-    end
+      def gzip(input)
+        io = StringIO.new
+        writer = Zlib::GzipWriter.new(io)
+        writer.write(input)
+        writer.close
+        io.string
+      end
+
+      def ungzip(input)
+        Zlib::GzipReader.new(StringIO.new(input), :encoding => 'ASCII-8BIT').read
+      end
+
+      def inflate(input)
+        Zlib::Inflate.inflate(input)
+      end
+
+      def deflate(input)
+        Zlib::Deflate.deflate(input)
+      end
   end
 end
