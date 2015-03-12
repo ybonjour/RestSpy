@@ -68,6 +68,7 @@ module RestSpy
             logger.info "[#{request.port} - #{request.request_method}: #{capture} -> Proxy #{remote_response.status}]"
             respond(remote_response.status, remote_response.headers, remote_response.body)
           else
+            logger.info "[#{request.port} - #{request.request_method}: #{capture} -> 404]"
             404
           end
         rescue Exception => e
