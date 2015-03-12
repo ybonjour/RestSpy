@@ -13,7 +13,7 @@ module RestSpy
       @app.call(request_env).on_complete do |response_env|
         if response_env[:body]
           response_env[:body] = rewriter.rewrite(response_env[:body], response_env[:response_headers]['Content-Encoding'])
-          response_env[:response_headers]['Content-Length'] = response_env[:body].length
+          response_env[:response_headers]['Content-Length'] = "#{response_env[:body].length}"
         end
       end
     end
