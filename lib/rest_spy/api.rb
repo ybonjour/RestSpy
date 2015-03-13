@@ -1,4 +1,5 @@
 require_relative 'server'
+require 'json'
 
 module RestSpy
   class Endpoint
@@ -13,6 +14,12 @@ module RestSpy
 
     def should_return(body = '', status_code = 200, headers = {})
       create_double(status_code, headers, body)
+    end
+
+    def should_return_as_json(body)
+      json_body = JSON.dump(body)
+      headers = {'Content-Type' => 'application/json', 'Content-Length' => "#{json_body.length}"}
+      create_double(200, headers, json_body)
     end
 
     def should_proxy_to(redirect_url)
