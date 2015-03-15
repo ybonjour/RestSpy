@@ -74,20 +74,14 @@ module RestSpy
 
           if double
             response = Response.double(double)
-            spy_logger.log_request(request, response)
-            logger.info "[#{request.port} - #{request.method}: #{request.path} -> Double: #{double.status_code}]"
-            respond(response)
           elsif proxy
             response = ProxyServer.execute_remote_request(request, proxy.redirect_url, rewrites)
-            spy_logger.log_request(request, response)
-            logger.info "[#{request.port} - #{request.method}: #{request.path} -> Proxy #{response.status_code}]"
-            respond(response)
           else
             response = Response.not_found
-            spy_logger.log_request(request, response)
-            logger.info "[#{request.port} - #{request.method}: #{request.path} -> 404]"
-            respond(response)
           end
+
+          spy_logger.log_request(request, response)
+          respond(response)
         rescue Exception => e
           logger.error(e)
           raise e
