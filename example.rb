@@ -24,3 +24,5 @@ google.endpoint('/json').should_return_as_json({"author" => {"name" => "Yves"}})
 
 response = Faraday.new.get('http://localhost:5678/json')
 puts(response.body) # {"author":{"name":"Yves"}}
+
+puts(facebook.get_requests)

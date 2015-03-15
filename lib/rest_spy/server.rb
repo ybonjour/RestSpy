@@ -44,6 +44,12 @@ module RestSpy
       Faraday.new.delete full_url(endpoint)
     end
 
+    def get(endpoint)
+      response = Faraday.new.get full_url(endpoint)
+      raise "Status Code (#{response.status}) is not 200" unless response.status == 200
+      response.body
+    end
+
     private
     attr_reader :port
     attr_accessor :process

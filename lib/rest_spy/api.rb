@@ -66,6 +66,11 @@ module RestSpy
       Endpoint.new(server, '.*')
     end
 
+    def get_requests
+      body = server.get('/spy')
+      JSON.parse(body)
+    end
+
     def close
       server.stop
     end
