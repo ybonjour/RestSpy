@@ -6,8 +6,7 @@ require 'rest_spy/response'
 module RestSpy
 
   describe Application do
-
-    let(:app) { RestSpy::Application }
+    include RSpecMixin
 
     context "when posting a Double" do
       it "should be able to post a Double with correct params" do
@@ -112,7 +111,9 @@ module RestSpy
 
       it "should forward a head request" do
         post '/proxies', {pattern: '/proxytest', redirect_url: 'http://www.google.com'}
-        expect(ProxyServer).to receive(:execute_remote_request).with(anything, 'http://www.google.com', []).and_return(response)
+        expect(ProxyServer).to receive(:execute_remote_request)
+                                   .with(anything, 'http://www.google.com', [])
+                                   .and_return(response)
 
         head '/proxytest'
 
@@ -198,6 +199,36 @@ module RestSpy
         get '/deleted'
 
         expect(last_response.status).to be 404
+      end
+    end
+
+    context "Logging" do
+      let!(:logger) {
+        logger = double('logger')
+        allow(Application).to receive(:spy_logger).and_return(logger)
+        logger
+      }
+
+      RSpec::Matchers.define :response_with_type do |expected_type|
+        match do |actual_response|
+          actual_response.type == expected_type
+        end
+      end
+
+      it "should log the request and the response for a double" do
+        post '/doubles', {pattern:'/logdouble', body: 'test'}
+
+        expect(logger).to receive(:log_request).with(anything, response_with_type('double'))
+        get '/logdouble'
+      end
+
+      it "should log the request and the response for a proxy" do
+        post '/proxies', {pattern:'/logproxy', redirect_url: 'http://www.google.com'}
+      end
+
+      it "should log the request and the response for a 404" do
+        expect(logger).to receive(:log_request).with(anything, response_with_type('not_found'))
+        get '/logme'
       end
     end
   end
