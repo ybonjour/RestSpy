@@ -55,6 +55,14 @@ module RestSpy
       200
     end
 
+    get '/spy' do
+      requests = spy_logger.get_requests(request.port)
+      body = requests.map { |e| {'request' => e[0].to_hash, 'response' => e[1].to_hash} }
+
+      body(JSON.dump(body))
+      status(200)
+    end
+
     %w{get post put delete head}.each do |method|
       send method, /(.*)/ do
         begin

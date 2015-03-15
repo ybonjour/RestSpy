@@ -26,7 +26,7 @@ module RestSpy
           'type' => type,
           'status_code' => status_code,
           'headers' => headers,
-          'body' => response_body
+          'body' => body
       }
     end
   end
