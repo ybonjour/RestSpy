@@ -6,40 +6,25 @@ module RestSpy
   module ProxyServer
     extend self
 
-    def execute_remote_request(original_request, redirect_url, environment, rewrites)
-      headers = extract_relevant_headers(environment)
-      composed_url = URI::join(redirect_url, original_request.fullpath).to_s
-
+    def execute_remote_request(original_request, redirect_url, rewrites)
       http_client = http_client(rewrites)
 
-      if original_request.get?
-        http_client.get(composed_url, headers)
-      elsif original_request.post?
-        http_client.post(composed_url, headers, original_request.body.read)
-      elsif original_request.put?
-        http_client.put(composed_url, headers, original_request.body.read)
-      elsif original_request.delete?
-        http_client.delete(composed_url, headers)
-      elsif original_request.head?
-        http_client.head(composed_url, headers)
-      else
-        raise "#{original_request.request_method} requests are not supported."
+      url = URI::join(redirect_url, original_request.path).to_s
+
+      case original_request.method
+        when 'GET'
+          http_client.get(url, original_request.headers)
+        when 'POST'
+          http_client.post(url, original_request.headers, original_request.body)
+        when 'PUT'
+          http_client.put(url, original_request.headers, original_request.body)
+        when 'DELETE'
+          http_client.delete(url, original_request.headers)
+        when 'HEAD'
+          http_client.head(url, original_request.headers)
+        else
+          raise "#{original_request.method} requests are not supported."
       end
-    end
-
-    def extract_relevant_headers(environment)
-      headers = Hash[environment
-               .select { |k, _| k.start_with?("HTTP_") && k != "HTTP_HOST"}
-               .map do |k, v|
-                  header_field = k.sub(/^HTTP_/, '').gsub('_', '-')
-                  [header_field, v]
-               end]
-
-      if environment['CONTENT_TYPE']
-        headers['CONTENT-TYPE'] = environment['CONTENT_TYPE']
-      end
-
-      headers
     end
 
     def http_client(rewrites)

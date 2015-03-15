@@ -99,7 +99,7 @@ module RestSpy
 
       it "should forward request to http_client if matching Proxy exists" do
         post '/proxies', {pattern: '/proxytest', redirect_url: 'http://www.google.com'}
-        expect(ProxyServer).to receive(:execute_remote_request).with(anything, 'http://www.google.com', anything, []).and_return(response)
+        expect(ProxyServer).to receive(:execute_remote_request).with(anything, 'http://www.google.com', []).and_return(response)
 
         get '/proxytest'
 
@@ -110,7 +110,7 @@ module RestSpy
 
       it "should forward a head request" do
         post '/proxies', {pattern: '/proxytest', redirect_url: 'http://www.google.com'}
-        expect(ProxyServer).to receive(:execute_remote_request).with(anything, 'http://www.google.com', anything, []).and_return(response)
+        expect(ProxyServer).to receive(:execute_remote_request).with(anything, 'http://www.google.com', []).and_return(response)
 
         head '/proxytest'
 
@@ -139,7 +139,7 @@ module RestSpy
         post '/rewrites', {pattern: '/rewritten', from: rewrite2.from, to: rewrite2.to}
 
         expect(ProxyServer).to receive(:execute_remote_request)
-                                .with(anything, 'http://www.google.com', anything, array_with_rewrites([rewrite1, rewrite2]))
+                                .with(anything, 'http://www.google.com', array_with_rewrites([rewrite1, rewrite2]))
                                 .and_return(response)
 
         get '/rewritten'
