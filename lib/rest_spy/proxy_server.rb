@@ -1,6 +1,7 @@
 require 'faraday'
 require 'json'
 require_relative 'response_rewrite_middleware'
+require_relative 'response'
 
 module RestSpy
   module ProxyServer
@@ -13,18 +14,20 @@ module RestSpy
 
       case original_request.method
         when 'GET'
-          http_client.get(url, original_request.headers)
+          response = http_client.get(url, original_request.headers)
         when 'POST'
-          http_client.post(url, original_request.headers, original_request.body)
+          response =  http_client.post(url, original_request.headers, original_request.body)
         when 'PUT'
-          http_client.put(url, original_request.headers, original_request.body)
+          response = http_client.put(url, original_request.headers, original_request.body)
         when 'DELETE'
-          http_client.delete(url, original_request.headers)
+          response = http_client.delete(url, original_request.headers)
         when 'HEAD'
-          http_client.head(url, original_request.headers)
+          response = http_client.head(url, original_request.headers)
         else
           raise "#{original_request.method} requests are not supported."
       end
+
+      Response.proxy(response.status, response.headers, response.body)
     end
 
     def http_client(rewrites)

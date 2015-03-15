@@ -1,6 +1,7 @@
 require File.expand_path '../spec_helper.rb', __FILE__
 require 'rest_spy/application'
 require 'rest_spy/proxy_server'
+require 'rest_spy/response'
 
 module RestSpy
 
@@ -84,7 +85,7 @@ module RestSpy
 
     context "when trying to hit a Proxy endpoint" do
       let(:response_headers) { {:field => 'aValue'} }
-      let(:response) { double("response", :body => 'A random body', :headers => response_headers, :status => 200) }
+      let(:response) { Response.proxy(200, response_headers, 'A random body') }
 
       RSpec::Matchers.define :array_with_rewrites do |expected|
         match do |actual|
@@ -99,7 +100,8 @@ module RestSpy
 
       it "should forward request to http_client if matching Proxy exists" do
         post '/proxies', {pattern: '/proxytest', redirect_url: 'http://www.google.com'}
-        expect(ProxyServer).to receive(:execute_remote_request).with(anything, 'http://www.google.com', []).and_return(response)
+        expect(ProxyServer).to receive(:execute_remote_request).with(anything, 'http://www.google.com', [])
+                                   .and_return(response)
 
         get '/proxytest'
 

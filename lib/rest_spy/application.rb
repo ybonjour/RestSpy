@@ -3,6 +3,7 @@ require 'logger'
 require_relative 'model'
 require_relative 'proxy_server'
 require_relative 'request'
+require_relative 'response'
 
 module RestSpy
   class Application < Sinatra::Base
@@ -61,23 +62,23 @@ module RestSpy
       send method, /(.*)/ do
         begin
           request = extract_request(params[:captures].first)
-          puts "Request: #{request}"
 
           double = @@DOUBLES.find_for_endpoint(request.path, request.port)
           proxy = @@PROXIES.find_for_endpoint(request.path, request.port)
           rewrites = @@REWRITES.find_all_for_endpoint(request.path, request.port)
 
-
           if double
+            response = Response.double(double)
             logger.info "[#{request.port} - #{request.method}: #{request.path} -> Double: #{double.status_code}]"
-            respond(double.status_code, double.headers, double.body)
+            respond(response)
           elsif proxy
-            remote_response = ProxyServer.execute_remote_request(request, proxy.redirect_url, rewrites)
-            logger.info "[#{request.port} - #{request.method}: #{request.path} -> Proxy #{remote_response.status}]"
-            respond(remote_response.status, remote_response.headers, remote_response.body)
+            response = ProxyServer.execute_remote_request(request, proxy.redirect_url, rewrites)
+            logger.info "[#{request.port} - #{request.method}: #{request.path} -> Proxy #{response.status_code}]"
+            respond(response)
           else
+            response = Response.not_found
             logger.info "[#{request.port} - #{request.method}: #{request.path} -> 404]"
-            404
+            respond(response)
           end
         rescue Exception => e
           logger.error(e)
@@ -87,22 +88,23 @@ module RestSpy
     end
 
     private
-    def respond(status_code, headers, body)
-      headers(headers)
-      body(body)
-      status(status_code)
+    def extract_request(path)
+      RestSpy::Request.new(
+          request.port,
+          request.request_method,
+          path,
+          Request.extract_relevant_headers(env),
+          request.body.read)
+    end
+
+    def respond(response)
+      headers(response.headers)
+      body(response.body)
+      status(response.status_code)
     end
 
     def logger
       @logger ||= Logger.new(STDOUT)
-    end
-
-    def extract_request(path)
-      RestSpy::Request.new(request.port,
-                           request.request_method,
-                           path,
-                           Request.extract_relevant_headers(env),
-                           request.body.read)
     end
   end
 end

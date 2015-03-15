@@ -14,6 +14,14 @@ module RestSpy
       let(:head_request) { Request.new(1234, 'HEAD', '/stream', headers) }
       let(:unsupported_request) { Request.new(1234, 'LINK', '/stream', headers) }
       let(:rewrites) { [double("rewrite")] }
+      let(:http_response) {
+        response = double('http_response')
+        allow(response).to receive(:status)
+        allow(response).to receive(:headers)
+        allow(response).to receive(:body)
+
+        response
+      }
 
       let(:http_client) {
         http_client = double('http_client')
@@ -22,33 +30,53 @@ module RestSpy
       }
 
       it "should send a correct get request" do
-        expect(http_client).to receive(:get).with('https://www.google.com/stream?limit=10', headers)
+        expect(http_client).to receive(:get)
+                                   .with('https://www.google.com/stream?limit=10', headers)
+                                   .and_return(http_response)
 
         ProxyServer.execute_remote_request(get_request, redirect_url, rewrites)
       end
 
       it "should send a correct post request" do
-        expect(http_client).to receive(:post).with('https://www.google.com/stream', headers, body)
+        expect(http_client).to receive(:post)
+                                   .with('https://www.google.com/stream', headers, body)
+                                   .and_return(http_response)
 
         ProxyServer.execute_remote_request(post_request, redirect_url, rewrites)
       end
 
       it "should send a correct put request" do
-        expect(http_client).to receive(:put).with('https://www.google.com/stream', headers, body)
+        expect(http_client).to receive(:put)
+                                   .with('https://www.google.com/stream', headers, body)
+                                   .and_return(http_response)
 
         ProxyServer.execute_remote_request(put_request, redirect_url, rewrites)
       end
 
       it "should send a correct delete request" do
-        expect(http_client).to receive(:delete).with('https://www.google.com/stream?limit=10', headers)
+        expect(http_client).to receive(:delete)
+                                   .with('https://www.google.com/stream?limit=10', headers)
+                                   .and_return(http_response)
 
         ProxyServer.execute_remote_request(delete_request, redirect_url, rewrites)
       end
 
       it "should send a correct head request" do
-        expect(http_client).to receive(:head).with('https://www.google.com/stream', headers)
+        expect(http_client).to receive(:head)
+                                   .with('https://www.google.com/stream', headers)
+                                   .and_return(http_response)
 
         ProxyServer.execute_remote_request(head_request, redirect_url, rewrites)
+      end
+
+      it "should return proxy response" do
+        expect(http_client).to receive(:get)
+                                   .with('https://www.google.com/stream?limit=10', headers)
+                                   .and_return(http_response)
+
+        response = ProxyServer.execute_remote_request(get_request, redirect_url, rewrites)
+
+        expect(response.type).to be == 'proxy'
       end
 
       it "should raise an error for an unsupported method" do
