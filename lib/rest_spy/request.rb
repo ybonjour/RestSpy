@@ -14,9 +14,7 @@ module RestSpy
       {
           'port' => port,
           'method' => method,
-          'path' => path,
-          'headers' => headers,
-          'body' => body
+          'path' => path
       }
     end
 

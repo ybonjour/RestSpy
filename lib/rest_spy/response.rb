@@ -24,9 +24,7 @@ module RestSpy
     def to_hash
       {
           'type' => type,
-          'status_code' => status_code,
-          'headers' => headers,
-          'body' => body
+          'status_code' => status_code
       }
     end
   end
