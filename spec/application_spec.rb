@@ -97,6 +97,12 @@ module RestSpy
         end
       end
 
+      RSpec::Matchers.define :request_with_path do |expected_path|
+        match do |actual_request|
+          expect(actual_request.path).to be == expected_path
+        end
+      end
+
       it "should forward request to http_client if matching Proxy exists" do
         post '/proxies', {pattern: '/proxytest', redirect_url: 'http://www.google.com'}
         expect(ProxyServer).to receive(:execute_remote_request).with(anything, 'http://www.google.com', [])
@@ -107,6 +113,16 @@ module RestSpy
         expect(last_response.body).to be == 'A random body'
         expect(last_response.status).to be 200
         expect(last_response.headers).to include(response_headers)
+      end
+
+      it "should forward query params" do
+        post '/proxies', {pattern: '/params.*', redirect_url: 'http://www.google.com'}
+
+        expect(ProxyServer).to receive(:execute_remote_request)
+                                   .with(request_with_path('/params?value=key'), 'http://www.google.com', [])
+                                   .and_return(response)
+
+        get '/params?value=key'
       end
 
       it "should forward a head request" do

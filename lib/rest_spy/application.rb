@@ -66,7 +66,7 @@ module RestSpy
     %w{get post put delete head}.each do |method|
       send method, /(.*)/ do
         begin
-          request = extract_request(params[:captures].first)
+          request = extract_request
 
           double = @@DOUBLES.find_for_endpoint(request.path, request.port)
           proxy = @@PROXIES.find_for_endpoint(request.path, request.port)
@@ -84,17 +84,17 @@ module RestSpy
           respond(response)
         rescue Exception => e
           logger.error(e)
-          raise e
+          500
         end
       end
     end
 
     private
-    def extract_request(path)
+    def extract_request
       RestSpy::Request.new(
           request.port,
           request.request_method,
-          path,
+          request.fullpath,
           Request.extract_relevant_headers(env),
           request.body.read)
     end
