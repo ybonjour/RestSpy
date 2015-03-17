@@ -1,7 +1,14 @@
 # RESTSpy
 Mock REST endpoints or proxy them to real endpoints.
 
-## Examples
+## Spies
+A `Spy` is a proxy that by default redirects requests to any endpoint to a real server.
+When creating a proxy you have to define on which local port the `Spy` shall be listening for requests and to which server the requests shall be sent.
+
+Once a `Spy` is created, you can start mocking certain endpoints, by providing `Doubles`. A `Double` represents a HTTP response as a triplet of a status code, headers and body.
+
+
+### Examples
 Mock `http://localhost:1234/stream` endpoint,
 while requests to all other endpoints are proxied to `https://www.facebook.com`
 
