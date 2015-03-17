@@ -5,6 +5,7 @@ require_relative 'model'
 require_relative 'proxy_server'
 require_relative 'request'
 require_relative 'response'
+require_relative 'pending_requests'
 
 module RestSpy
   class Application < Sinatra::Base
@@ -12,6 +13,7 @@ module RestSpy
     @@DOUBLES = Model::MatchableRegistry.new
     @@PROXIES = Model::MatchableRegistry.new
     @@REWRITES = Model::MatchableRegistry.new
+    @@PENDING_REQUESTS = PendingRequests.new
 
     set :server, %w[thin]
 
@@ -56,6 +58,7 @@ module RestSpy
     end
 
     get '/spy' do
+      @@PENDING_REQUESTS.block_until_pending_requests_completed(request.port)
       requests = spy_logger.get_requests(request.port)
       body = requests.map { |e| {'request' => e[0].to_hash, 'response' => e[1].to_hash} }
 
@@ -67,6 +70,7 @@ module RestSpy
       send method, /(.*)/ do
         begin
           request = extract_request
+          @@PENDING_REQUESTS.pending_request(request)
 
           double = @@DOUBLES.find_for_endpoint(request.path, request.port)
           proxy = @@PROXIES.find_for_endpoint(request.path, request.port)
@@ -85,6 +89,8 @@ module RestSpy
         rescue Exception => e
           logger.error(e)
           500
+        ensure
+          @@PENDING_REQUESTS.completed_request(request) if request
         end
       end
     end
