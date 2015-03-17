@@ -25,7 +25,6 @@ module RestSpy
     attr_reader :type, :status_code, :headers, :body, :decoded_body
 
     def to_hash
-      puts "BODY: #{decoded_body}"
       {
           'type' => type,
           'status_code' => status_code,
