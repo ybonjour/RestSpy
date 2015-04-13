@@ -24,7 +24,7 @@ module RestSpy
       }
     end
 
-    def block_until_pending_requests_completed(port, timeout_sec=3)
+    def block_until_pending_requests_completed(port, timeout_sec=15)
       #TODO: Busy waiting is bad. Check for signal possibilities
       Timeout.timeout(timeout_sec) do
         until empty?(port)
