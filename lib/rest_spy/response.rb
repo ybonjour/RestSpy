@@ -18,6 +18,10 @@ module RestSpy
       Response.new('double', double.status_code, double.headers, double.body)
     end
 
+    def self.exception(exception)
+      Response.new('exception', 500, {}, exception.message)
+    end
+
     def self.not_found
       Response.new('not_found', 404, {}, '')
     end

@@ -38,7 +38,7 @@ module RestSpy
     post '/proxies' do
       return 400 unless params[:pattern] && params[:redirect_url]
 
-      logger.info "[#{request.port} - Proxy: #{params[:pattern]} -> #{params[:redirect_url]}]"
+      logger.info "[#{request.port} - Proxy: #{params[:pattPlern]} -> #{params[:redirect_url]}]"
 
       p = Model::Proxy.new(params[:pattern], params[:redirect_url])
       @@PROXIES.register(p, request.port)
@@ -87,8 +87,9 @@ module RestSpy
           spy_logger.log_request(request, response)
           respond(response)
         rescue Exception => e
-          logger.error(e)
-          500
+          response = Response.error(e)
+          spy_logger.log_request(request, response) if request
+          respond(response)
         ensure
           @@PENDING_REQUESTS.completed_request(request) if request
         end
