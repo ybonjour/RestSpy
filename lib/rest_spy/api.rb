@@ -22,6 +22,13 @@ module RestSpy
       create_double(200, headers, json_body)
     end
 
+    def should_return_as_jpeg(path)
+      File.open(path, 'rb') {|file|
+        headers = {'Content-Type' => 'image/jpeg'}
+        create_double(200, headers, file.read)
+      }
+    end
+
     def should_proxy_to(redirect_url)
       create_proxy(redirect_url)
     end
