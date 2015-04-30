@@ -87,7 +87,7 @@ module RestSpy
           spy_logger.log_request(request, response)
           respond(response)
         rescue Exception => e
-          response = Response.error(e)
+          response = Response.exception(e)
           spy_logger.log_request(request, response) if request
           respond(response)
         ensure
