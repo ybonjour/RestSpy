@@ -25,7 +25,11 @@ google.endpoint('/json').should_return_as_json({"author" => {"name" => "Yves"}})
 response = Faraday.new.get('http://localhost:5678/json')
 puts(response.body) # {"author":{"name":"Yves"}}
 
-puts(facebook.get_requests)
+puts(facebook.get_requests) #requests
+
+facebook.clear_requests
+
+puts(facebook.get_requests == []) #true
 
 google.endpoint('/cat').should_return_as_jpeg('test_image.jpg')
 response = Faraday.new.get('http://localhost:5678/cat')

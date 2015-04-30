@@ -69,5 +69,21 @@ module RestSpy
 
       expect(requests).to be == [[request, response], [request2, response2]]
     end
+
+    it "clears requests for a port" do
+      logger.log_request(request, response)
+
+      logger.clear(1234)
+
+      expect(logger.get_requests).to be == []
+    end
+
+    it "does not clear requests for another port" do
+      logger.log_request(request, response)
+
+      logger.clear(5678)
+
+      expect(logger.get_requests).to be == [[request, response]]
+    end
   end
 end

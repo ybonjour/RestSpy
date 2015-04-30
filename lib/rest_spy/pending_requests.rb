@@ -20,7 +20,7 @@ module RestSpy
 
     def empty?(port)
       synchronized {
-        requests[port].size == 0
+        (not requests.include? port) || requests[port].size == 0
       }
     end
 

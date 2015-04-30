@@ -17,6 +17,11 @@ module RestSpy
       requests.select {|e| !port || e[0].port == port}
     end
 
+    def clear(port)
+      puts "Port #{port}"
+      @requests = requests.select {|e| e[0].port != port}
+    end
+
     private
     attr_reader :standard_logger, :requests
   end

@@ -246,6 +246,11 @@ module RestSpy
         expect(logger).to receive(:log_request).with(anything, response_with_type('not_found'))
         get '/logme'
       end
+
+      it "should clear the log" do
+        expect(logger).to receive(:clear).with(80)
+        delete '/spy'
+      end
     end
   end
 end

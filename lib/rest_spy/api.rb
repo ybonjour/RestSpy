@@ -78,6 +78,10 @@ module RestSpy
       JSON.parse(body)
     end
 
+    def clear_requests
+      server.delete('/spy')
+    end
+
     def close
       server.stop
     end

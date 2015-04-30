@@ -66,6 +66,12 @@ module RestSpy
       status(200)
     end
 
+    delete '/spy' do
+      @@PENDING_REQUESTS.block_until_pending_requests_completed(request.port)
+      spy_logger.clear(request.port)
+      status(200)
+    end
+
     %w{get post put delete head}.each do |method|
       send method, /(.*)/ do
         begin
