@@ -7,32 +7,59 @@ at_exit do
 end
 
 module RestSpy
+  class ServerRegistry
+    include Singleton
+
+    def initialize
+      @servers = {}
+      @mutex = Mutex.new
+    end
+
+    attr_reader :mutex
+
+    def register(server)
+      raise 'server for that port is already registered' if servers.include? server.port
+
+      servers[server.port] = server
+    end
+
+    def unregister(server)
+      return false unless servers.include? server.port
+      servers.remove(server.port)
+      true
+    end
+
+    def each
+      servers.each
+    end
+
+    private
+    attr_reader :servers
+  end
+
   class Server
     def initialize(port)
       @port = port
     end
 
+    attr_reader :port
+
     def self.stop_all_servers
-      started_servers.each { |_, server| server.stop }
+      ServerRegistry.instance.each { |server| server.stop }
     end
 
     def start
       synchronized {
-        if started_servers.include? port
-          raise 'There was already a server started on this port.'
-        end
+        ServerRegistry.instance.register(self)
         self.process = start_server_process!
         wait_until_server_running
-
-        started_servers[port] = self
       }
     end
 
     def stop
       synchronized {
-        return unless started_servers.include? port
+        return unless ServerRegistry.instance.unregister(self)
         stop_server_process
-        started_servers.delete(port)
       }
     end
 
@@ -51,7 +78,6 @@ module RestSpy
     end
 
     private
-    attr_reader :port
     attr_accessor :process
 
     def start_server_process!
@@ -99,16 +125,8 @@ module RestSpy
       started_servers_mutex.synchronize { block.call }
     end
 
-    def started_servers
-      self.class.started_servers
-    end
-
-    def self.started_servers
-      @@started_servers ||= {}
-    end
-
     def started_servers_mutex
-      @@started_servers_mutex = Mutex.new
+      ServerRegistry.instance.mutex
     end
   end
 end
