@@ -222,6 +222,7 @@ module RestSpy
       let!(:logger) {
         logger = double('logger')
         allow(Application).to receive(:spy_logger).and_return(logger)
+        allow(logger).to receive(:info)
         logger
       }
 
