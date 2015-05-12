@@ -18,7 +18,6 @@ module RestSpy
     end
 
     def clear(port)
-      puts "Port #{port}"
       @requests = requests.select {|e| e[0].port != port}
     end
 
