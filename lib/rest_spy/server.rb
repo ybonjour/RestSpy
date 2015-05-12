@@ -25,12 +25,12 @@ module RestSpy
 
     def unregister(server)
       return false unless servers.include? server.port
-      servers.remove(server.port)
+      servers.delete(server.port)
       true
     end
 
     def each
-      servers.each
+      servers.values.each { |server| yield server}
     end
 
     private
