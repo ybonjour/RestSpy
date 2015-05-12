@@ -13,6 +13,11 @@ module RestSpy
       requests << [request, response]
     end
 
+    def info(text)
+      return unless standard_logger
+      standard_logger.info(text)
+    end
+
     def get_requests(port=nil)
       requests.select {|e| !port || e[0].port == port}
     end

@@ -6,6 +6,7 @@ require_relative 'proxy_server'
 require_relative 'request'
 require_relative 'response'
 require_relative 'pending_requests'
+require_relative 'environment'
 
 module RestSpy
   class Application < Sinatra::Base
@@ -20,7 +21,7 @@ module RestSpy
     post '/doubles' do
       return 400 unless params[:pattern] && params[:body]
 
-      logger.info "[#{request.port} - Double: #{params[:pattern]}]"
+      spy_logger.info "[#{request.port} - Double: #{params[:pattern]}]"
 
       status_code = (params[:status_code] || 200).to_i
       headers = params[:headers] || {}
@@ -31,14 +32,14 @@ module RestSpy
     end
 
     delete '/doubles/all' do
-      logger.info "[#{request.port} - Clear all doubles]"
+      spy_logger.info "[#{request.port} - Clear all doubles]"
       @@DOUBLES.reset(request.port)
     end
 
     post '/proxies' do
       return 400 unless params[:pattern] && params[:redirect_url]
 
-      logger.info "[#{request.port} - Proxy: #{params[:pattPlern]} -> #{params[:redirect_url]}]"
+      spy_logger.info "[#{request.port} - Proxy: #{params[:pattPlern]} -> #{params[:redirect_url]}]"
 
       p = Model::Proxy.new(params[:pattern], params[:redirect_url])
       @@PROXIES.register(p, request.port)
@@ -49,7 +50,7 @@ module RestSpy
     post '/rewrites' do
       return 400 unless params[:pattern] && params[:from] && params[:to]
 
-      logger.info "[#{request.port} - Rewrite #{params[:pattern]}: #{params[:from]} -> #{params[:to]}]"
+      spy_logger.info "[#{request.port} - Rewrite #{params[:pattern]}: #{params[:from]} -> #{params[:to]}]"
 
       r = Model::Rewrite.new(params[:pattern], params[:from], params[:to])
       @@REWRITES.register(r, request.port)
@@ -118,8 +119,13 @@ module RestSpy
       status(response.status_code)
     end
 
+    def self.create_spy_logger
+      standard_logger = RestSpy::Environment.mute? ? nil : Application.logger
+      SpyLogger.new(standard_logger)
+    end
+
     def self.spy_logger
-      @@spy_logger ||= SpyLogger.new(Application.logger)
+      @@spy_logger ||= create_spy_logger
     end
 
     def spy_logger
