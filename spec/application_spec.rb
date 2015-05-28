@@ -71,6 +71,28 @@ module RestSpy
       end
     end
 
+    context 'when removing a Double' do
+      it 'should return 200 if the double exists' do
+        post '/doubles', {pattern: '/to/delete', body: 'will be deleted'}
+        double_id = JSON.parse(last_response.body)['id']
+
+        delete "/doubles/#{double_id}"
+
+        expect(last_response).to be_ok
+      end
+
+      it 'removes the double' do
+        endpoint_path = '/to/be/deleted'
+        post '/doubles', {pattern: endpoint_path, body: 'will be deleted'}
+        double_id = JSON.parse(last_response.body)['id']
+
+        delete "/doubles/#{double_id}"
+
+        get endpoint_path
+        expect(last_response.status).to be 404
+      end
+    end
+
     context "when posting a Proxy" do
       it "should be able to post a proxy with correct parameters" do
         post '/proxies', {pattern: '/test', redirect_url: 'http://www.google.ch'}

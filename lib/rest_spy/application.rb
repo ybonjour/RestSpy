@@ -37,6 +37,12 @@ module RestSpy
       @@DOUBLES.reset(request.port)
     end
 
+    delete '/doubles/:id' do
+      spy_logger.info "[#{request.port} - Remove double with id #{params[:id]}"
+      @@DOUBLES.unregister(params[:id], request.port)
+      200
+    end
+
     post '/proxies' do
       return 400 unless params[:pattern] && params[:redirect_url]
 
