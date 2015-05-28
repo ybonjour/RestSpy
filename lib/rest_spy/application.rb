@@ -106,7 +106,6 @@ module RestSpy
           spy_logger.log_request(request, response) if request
           respond(response)
         ensure
-          puts "Completing #{request}"
           @@PENDING_REQUESTS.completed_request(request) if request
         end
       end
