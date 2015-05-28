@@ -210,7 +210,7 @@ module RestSpy
       it "should remove a double" do
         post '/doubles', {pattern:'/deleted', body: 'test'}
 
-        delete '/doubles/all'
+        delete '/doubles'
 
         get '/deleted'
 

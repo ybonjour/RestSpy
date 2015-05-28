@@ -15,6 +15,7 @@ module RestSpy
     @@PROXIES = Model::MatchableRegistry.new
     @@REWRITES = Model::MatchableRegistry.new
     @@PENDING_REQUESTS = PendingRequests.new
+    @@ALL_DOUBLES = false
 
     set :server, %w[thin]
 
@@ -31,7 +32,7 @@ module RestSpy
       200
     end
 
-    delete '/doubles/all' do
+    delete '/doubles' do
       spy_logger.info "[#{request.port} - Clear all doubles]"
       @@DOUBLES.reset(request.port)
     end
@@ -77,6 +78,7 @@ module RestSpy
       send method, /(.*)/ do
         begin
           request = extract_request
+          puts "Starting #{request}"
           @@PENDING_REQUESTS.pending_request(request)
 
           double = @@DOUBLES.find_for_endpoint(request.path, request.port)
@@ -98,6 +100,7 @@ module RestSpy
           spy_logger.log_request(request, response) if request
           respond(response)
         ensure
+          puts "Completing #{request}"
           @@PENDING_REQUESTS.completed_request(request) if request
         end
       end

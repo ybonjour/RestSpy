@@ -66,7 +66,7 @@ module RestSpy
     end
 
     def reset
-      server.delete '/doubles/all'
+      server.delete '/doubles'
     end
 
     def all_endpoints
