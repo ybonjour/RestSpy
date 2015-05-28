@@ -2,6 +2,14 @@ require_relative 'server'
 require 'json'
 
 module RestSpy
+  class Double
+    def initialize(id)
+      @id = id
+    end
+
+    attr_reader :id
+  end
+
   class Endpoint
     def initialize(server, path_pattern)
       @server = server
@@ -41,7 +49,9 @@ module RestSpy
     end
 
     def create_double(status_code, headers, body)
-      server.post('/doubles', {:pattern => path_pattern, :status_code => status_code, :headers=>headers, :body => body})
+      response = server.post('/doubles', {:pattern => path_pattern, :status_code => status_code, :headers=>headers, :body => body})
+      raise "Double for #{path_pattern} could not be created" unless response.status == 200
+      Double.new(JSON.parse(response.body)['id'])
     end
   end
 
@@ -63,6 +73,10 @@ module RestSpy
 
     def endpoint(endpoint_pattern)
       Endpoint.new(server, endpoint_pattern)
+    end
+
+    def remove_double(double)
+      server.delete "/doubles/#{double.id}"
     end
 
     def reset
