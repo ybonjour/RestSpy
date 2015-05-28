@@ -19,7 +19,6 @@ module RestSpy
     end
 
     def empty?(port)
-      puts "Pending requests #{requests[port]}"
       synchronized {
         (not requests.include? port) || requests[port].size == 0
       }
