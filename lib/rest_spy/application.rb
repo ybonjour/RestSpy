@@ -29,8 +29,7 @@ module RestSpy
       d = Model::Double.new(params[:pattern], params[:body], status_code, headers)
       @@DOUBLES.register(d, request.port)
 
-      body(JSON.dump({id: d.id}))
-      status(200)
+      respond_with_matchable(d)
     end
 
     delete '/doubles' do
@@ -46,7 +45,7 @@ module RestSpy
       p = Model::Proxy.new(params[:pattern], params[:redirect_url])
       @@PROXIES.register(p, request.port)
 
-      200
+      respond_with_matchable(p)
     end
 
     post '/rewrites' do
@@ -57,7 +56,7 @@ module RestSpy
       r = Model::Rewrite.new(params[:pattern], params[:from], params[:to])
       @@REWRITES.register(r, request.port)
 
-      200
+      respond_with_matchable(r)
     end
 
     get '/spy' do
@@ -121,6 +120,11 @@ module RestSpy
       headers(response.headers)
       body(response.body)
       status(response.status_code)
+    end
+
+    def respond_with_matchable(matchable)
+      body(JSON.dump({id: matchable.id}))
+      status(200)
     end
 
     def self.create_spy_logger

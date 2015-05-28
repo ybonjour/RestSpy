@@ -8,6 +8,8 @@ module RestSpy
   describe Application do
     include RSpecMixin
 
+    let(:response_id_pattern) { /\{"id":".*"\}/ }
+
     context "when posting a Double" do
       it "should be able to post a Double with correct params" do
         post '/doubles', {pattern: 'test', body: 'test'}
@@ -29,7 +31,7 @@ module RestSpy
         post '/doubles', {pattern: 'foobar', body: 'test'}
 
         expect(last_response).to be_ok
-        expect(last_response.body).to be =~ /\{"id":".*"\}/
+        expect(last_response.body).to be =~ response_id_pattern
       end
     end
 
@@ -86,6 +88,13 @@ module RestSpy
         post '/proxies', {pattern: '/test'}
 
         expect(last_response.status).to be 400
+      end
+
+      it "should return the proxy id" do
+        post '/proxies', {pattern: '/foo/bar', redirect_url: 'http://www.google.ch'}
+
+        expect(last_response).to be_ok
+        expect(last_response.body).to be =~ response_id_pattern
       end
     end
 
@@ -198,8 +207,14 @@ module RestSpy
 
         expect(last_response.status).to be 400
       end
-    end
 
+      it "should return rewrite id" do
+        post '/rewrites', {pattern: '/foo/bar', from: 'http://www.google.com', to: 'http://localhost:1234'}
+
+        expect(last_response).to be_ok
+        expect(last_response.body).to be =~ response_id_pattern
+      end
+    end
 
     context "Presedence" do
       it "should return the Double if a Proxy and a Double match the endpoint" do
