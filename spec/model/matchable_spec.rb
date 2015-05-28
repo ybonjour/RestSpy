@@ -26,6 +26,19 @@ module RestSpy
         matches = m.matches('testfoo')
         expect(matches).to be false
       end
+
+      it "automatically generates an id" do
+        m = Matchable.new('test')
+
+        expect(m.id).to be =~ /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+      end
+
+      it "generates a unique id" do
+        m1 = Matchable.new('test')
+        m2 = Matchable.new('test')
+
+        expect(m1.id).to_not be == m2.id
+      end
     end
   end
 end

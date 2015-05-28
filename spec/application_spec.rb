@@ -24,6 +24,13 @@ module RestSpy
         post '/doubles', {pattern: 'test'}
         expect(last_response.status).to be 400
       end
+
+      it "should return the double id" do
+        post '/doubles', {pattern: 'foobar', body: 'test'}
+
+        expect(last_response).to be_ok
+        expect(last_response.body).to be =~ /\{"id":".*"\}/
+      end
     end
 
     context "when trying to hit a Double endpoint" do

@@ -29,7 +29,8 @@ module RestSpy
       d = Model::Double.new(params[:pattern], params[:body], status_code, headers)
       @@DOUBLES.register(d, request.port)
 
-      200
+      body(JSON.dump({id: d.id}))
+      status(200)
     end
 
     delete '/doubles' do
