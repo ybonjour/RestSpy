@@ -75,7 +75,9 @@ module RestSpy
     end
 
     def stop
-      # Don't control the external servers lifecycle
+      # Don't control the external servers lifecycle, but ensure that log is cleaned and doubles are reset
+      delete '/doubles'
+      delete '/spy'
     end
   end
 
