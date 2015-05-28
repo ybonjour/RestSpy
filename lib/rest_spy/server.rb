@@ -3,8 +3,9 @@ require_relative 'application'
 require 'childprocess'
 
 at_exit do
-  RestSpy::Server.stop_all_servers
+  RestSpy::ServerRegistry.instance.each { |server| server.stop }
 end
+
 
 module RestSpy
   class ServerRegistry
@@ -38,29 +39,8 @@ module RestSpy
   end
 
   class Server
-    def initialize(port)
-      @port = port
-    end
-
-    attr_reader :port
-
-    def self.stop_all_servers
-      ServerRegistry.instance.each { |server| server.stop }
-    end
-
-    def start
-      synchronized {
-        ServerRegistry.instance.register(self)
-        self.process = start_server_process!
-        wait_until_server_running
-      }
-    end
-
-    def stop
-      synchronized {
-        return unless ServerRegistry.instance.unregister(self)
-        stop_server_process
-      }
+    def initialize(base_url)
+      @base_url = base_url
     end
 
     def post(endpoint, data)
@@ -75,6 +55,51 @@ module RestSpy
       response = Faraday.new.get full_url(endpoint)
       raise "Status Code (#{response.status}) is not 200" unless response.status == 200
       response.body
+    end
+
+    private
+    attr_reader :base_url
+
+    def full_url(endpoint)
+      URI::join(base_url, endpoint).to_s
+    end
+  end
+
+  class ExternalServer < Server
+    def initialize(base_url)
+      super(base_url)
+    end
+
+    def start
+      # Don't control the external servers lifecycle
+    end
+
+    def stop
+      # Don't control the external servers lifecycle
+    end
+  end
+
+  class LocalServer < Server
+    def initialize(port)
+      super("http://localhost:#{port}/")
+      @port = port
+    end
+
+    attr_reader :port
+
+    def start
+      synchronized {
+        ServerRegistry.instance.register(self)
+        self.process = start_server_process!
+        wait_until_server_running
+      }
+    end
+
+    def stop
+      synchronized {
+        return unless ServerRegistry.instance.unregister(self)
+        stop_server_process
+      }
     end
 
     private
@@ -101,15 +126,7 @@ module RestSpy
     end
 
     def wait_until_server_running
-        wait_until { reachable? }
-    end
-
-    def full_url(path)
-      URI::join(base_url, path).to_s
-    end
-
-    def base_url
-      "http://localhost:#{port}/"
+      wait_until { reachable? }
     end
 
     def reachable?

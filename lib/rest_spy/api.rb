@@ -56,14 +56,18 @@ module RestSpy
   end
 
   class Spy
-    def initialize(server_url, local_port)
-      @server = Server.new(local_port)
+    def initialize(server_url, server)
+      @server = server
       @server.start
       endpoint('.*').should_proxy_to server_url
     end
 
+    def self.from_existing_server(remote_server_url, rest_spy_server_url)
+      Spy.new(remote_server_url, ExternalServer.new(rest_spy_server_url))
+    end
+
     def self.server_on_local_port(server_url, port)
-      Spy.new(server_url, port)
+      Spy.new(server_url, LocalServer.new(port))
     end
 
     def and_rewrite(from, to)

@@ -45,4 +45,3 @@ response = Faraday.new.get('http://localhost:5678/mail')
 puts(response.status) #301
 
 
-
