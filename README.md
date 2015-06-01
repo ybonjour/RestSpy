@@ -1,4 +1,4 @@
-# RESTSpy
+# RESTSpy [![Build Status](https://travis-ci.org/ybonjour/RestSpy.svg?branch=master)](https://travis-ci.org/ybonjour/RestSpy)
 Mock REST endpoints or proxy them to real endpoints.
 
 ## Spies
