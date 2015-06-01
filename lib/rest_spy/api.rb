@@ -2,109 +2,181 @@ require_relative 'server'
 require 'json'
 
 module RestSpy
-  class Double
-    def initialize(id)
-      @id = id
+  module Api
+    class Double
+      def initialize(id)
+        @id = id
+      end
+
+      attr_reader :id
     end
 
-    attr_reader :id
-  end
+    class CreateDouble
+      def initialize(status_code, headers, body)
+        @status_code = status_code
+        @headers = headers
+        @body = body
+      end
 
-  class Endpoint
-    def initialize(server, path_pattern)
-      @server = server
-      @path_pattern = path_pattern
+      def perform(endpoint, life_time=nil)
+        params = {:pattern => endpoint.path_pattern, :status_code => status_code, :headers=>headers, :body => body}
+        params[:life_time] = life_time unless life_time.nil?
+        response = endpoint.server.post('/doubles', params)
+        raise "Double for #{endpoint.path_pattern} could not be created" unless response.status == 200
+        Double.new(JSON.parse(response.body)['id'])
+      end
+
+      private
+      attr_reader :status_code, :headers, :body
     end
 
-    def should_return_error_code(error_code)
-      create_double(error_code, {}, '')
+    class CreateProxy
+      def initialize(redirect_url)
+        @redirect_url = redirect_url
+      end
+
+      def perform(endpoint, life_time=nil)
+        params = {pattern: endpoint.path_pattern, redirect_url: redirect_url}
+        params[:life_time] = life_time unless life_time.nil?
+        endpoint.server.post '/proxies', params
+      end
+
+      private
+      attr_reader :redirect_url
     end
 
-    def should_return(body = '', status_code = 200, headers = {})
-      create_double(status_code, headers, body)
+    class SerialCommand
+      def initialize(first_command)
+        @commands = [first_command]
+      end
+
+      def and_then(command)
+        @commands << command
+        self
+      end
+
+      def perform(endpoint)
+        return if @commands.empty?
+
+        last_command = @commands.last
+        rest = @commands.first(@commands.size - 1)
+
+        last_command.perform(endpoint)
+
+        rest.reverse.each do |command|
+          command.perform(endpoint, life_time=1)
+        end
+      end
     end
 
-    def should_return_as_json(body)
+    def return_error_code(error_code)
+      CreateDouble.new(error_code, {}, '')
+    end
+
+    def proxy_to(redirect_url)
+      CreateProxy.new(redirect_url)
+    end
+
+    def return_response(body = '', status_code = 200, headers = {})
+      CreateDouble.new(status_code, headers, body)
+    end
+
+    def return_as_json(body)
       json_body = JSON.dump(body)
       headers = {'Content-Type' => 'application/json', 'Content-Length' => "#{json_body.length}"}
-      create_double(200, headers, json_body)
+      CreateDouble.new(200, headers, json_body)
     end
 
-    def should_return_as_jpeg(path)
+    def first(command)
+      SerialCommand.new(command)
+    end
+
+    def return_as_jpeg(path)
       File.open(path, 'rb') {|file|
         headers = {'Content-Type' => 'image/jpeg'}
-        create_double(200, headers, file.read)
+        CreateDouble.new(200, headers, file.read)
       }
     end
 
-    def should_proxy_to(redirect_url)
-      create_proxy(redirect_url)
+    class Endpoint
+      def initialize(server, path_pattern)
+        @server = server
+        @path_pattern = path_pattern
+      end
+
+      def should(command)
+        command.perform(self)
+      end
+
+      def should_once(command)
+        command.perform(self, life_time=1)
+      end
+
+      attr_reader :server, :path_pattern
+
+      def create_proxy(redirect_url)
+        CreateProxy.new(redirect_url).perform(self)
+      end
+
+      def create_double(status_code, headers, body)
+        CreateDouble.new(status_code, headers, body).perform(self)
+      end
     end
 
-    private
-    attr_reader :server, :path_pattern
+    class Spy
+      def initialize(remote_url, server)
+        @remote_url = remote_url
+        @server = server
+        @server.start
+        endpoint('.*').should(proxy_to remote_url)
+      end
 
-    def create_proxy(redirect_url)
-      server.post '/proxies', {pattern: path_pattern, redirect_url: redirect_url}
+      attr_reader :remote_url
+
+      def self.from_existing_server(remote_server_url, rest_spy_server_url)
+        Spy.new(remote_server_url, ExternalServer.new(rest_spy_server_url))
+      end
+
+      def self.server_on_local_port(server_url, port)
+        Spy.new(server_url, LocalServer.new(port))
+      end
+
+      def and_rewrite(from, to)
+        server.post '/rewrites', {pattern: '.*', from: from, to: to}
+        self
+      end
+
+      def endpoint(endpoint_pattern)
+        Endpoint.new(server, endpoint_pattern)
+      end
+
+      def remove_double(double)
+        server.delete "/doubles/#{double.id}"
+      end
+
+      def reset
+        server.delete '/doubles'
+      end
+
+      def all_endpoints
+        Endpoint.new(server, '.*')
+      end
+
+      def get_requests
+        body = server.get('/spy')
+        JSON.parse(body)
+      end
+
+      def clear_requests
+        server.delete('/spy')
+      end
+
+      def close
+        server.stop
+      end
+
+      private
+      attr_reader :server
     end
-
-    def create_double(status_code, headers, body)
-      response = server.post('/doubles', {:pattern => path_pattern, :status_code => status_code, :headers=>headers, :body => body})
-      raise "Double for #{path_pattern} could not be created" unless response.status == 200
-      Double.new(JSON.parse(response.body)['id'])
-    end
-  end
-
-  class Spy
-    def initialize(server_url, server)
-      @server = server
-      @server.start
-      endpoint('.*').should_proxy_to server_url
-    end
-
-    def self.from_existing_server(remote_server_url, rest_spy_server_url)
-      Spy.new(remote_server_url, ExternalServer.new(rest_spy_server_url))
-    end
-
-    def self.server_on_local_port(server_url, port)
-      Spy.new(server_url, LocalServer.new(port))
-    end
-
-    def and_rewrite(from, to)
-      server.post '/rewrites', {pattern: '.*', from: from, to: to}
-      self
-    end
-
-    def endpoint(endpoint_pattern)
-      Endpoint.new(server, endpoint_pattern)
-    end
-
-    def remove_double(double)
-      server.delete "/doubles/#{double.id}"
-    end
-
-    def reset
-      server.delete '/doubles'
-    end
-
-    def all_endpoints
-      Endpoint.new(server, '.*')
-    end
-
-    def get_requests
-      body = server.get('/spy')
-      JSON.parse(body)
-    end
-
-    def clear_requests
-      server.delete('/spy')
-    end
-
-    def close
-      server.stop
-    end
-
-    private
-    attr_reader :server
   end
 end
