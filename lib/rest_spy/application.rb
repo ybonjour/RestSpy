@@ -24,7 +24,7 @@ module RestSpy
       status_code = (params[:status_code] || 200).to_i
       headers = params[:headers] || {}
       d = Model::Double.new(params[:pattern], params[:body], status_code, headers)
-      @@MATCHABLES.register(d, request.port)
+      @@MATCHABLES.register(d, request.port, life_time)
 
       respond_with_matchable(d)
     end
@@ -49,7 +49,7 @@ module RestSpy
       spy_logger.info "[#{request.port} - Proxy: #{params[:pattPlern]} -> #{params[:redirect_url]}]"
 
       p = Model::Proxy.new(params[:pattern], params[:redirect_url])
-      @@MATCHABLES.register(p, request.port)
+      @@MATCHABLES.register(p, request.port, life_time)
 
       respond_with_matchable(p)
     end
@@ -111,6 +111,10 @@ module RestSpy
     end
 
     private
+    def life_time
+      params[:life_time].nil? ? nil : params[:life_time].to_i
+    end
+
     def extract_request
       RestSpy::Request.new(
           request.port,

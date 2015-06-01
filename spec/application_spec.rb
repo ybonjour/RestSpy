@@ -313,5 +313,48 @@ module RestSpy
         delete '/spy'
       end
     end
+
+    context 'when doubles and Proxies have life times' do
+      let(:proxy_response) { Response.proxy(200, {}, 'proxy response') }
+
+      it 'should not return a double after a its lifetime' do
+        post '/doubles', {pattern: '/lifetime/double', body: 'test', life_time: '1'}
+
+        get '/lifetime/double'
+
+        expect(last_response).to be_ok
+        expect(last_response.body).to be == 'test'
+
+        get '/lifetime/double'
+
+        expect(last_response.status).to be 404
+      end
+
+      it 'should not return a proxy after its lifetime' do
+        post '/proxies', {pattern:'/lifetime/proxy', redirect_url: 'http://www.google.com', life_time: '1'}
+
+        expect(ProxyServer).to receive(:execute_remote_request).and_return(proxy_response)
+        get '/lifetime/proxy'
+        expect(last_response).to be_ok
+
+        get '/lifetime/proxy'
+
+        expect(last_response.status).to be 404
+      end
+
+      it 'should be able to fallback after life time expiered' do
+        post '/doubles', {pattern: '/lifetime', body:'double response'}
+        post '/proxies', {pattern:'/lifetime', redirect_url: 'http://www.google.com', life_time: '1'}
+        expect(ProxyServer).to receive(:execute_remote_request).and_return(proxy_response)
+
+        get '/lifetime'
+        expect(last_response).to be_ok
+        expect(last_response.body).to be == 'proxy response'
+
+        get '/lifetime'
+        expect(last_response).to be_ok
+        expect(last_response.body).to be == 'double response'
+      end
+    end
   end
 end
