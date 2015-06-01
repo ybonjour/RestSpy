@@ -11,8 +11,8 @@ require_relative 'environment'
 module RestSpy
   class Application < Sinatra::Base
 
-    @@DOUBLES = Model::MatchableRegistry.new
-    @@PROXIES = Model::MatchableRegistry.new
+    @@DOUBLES = Model::TimedMatchableRegistry.new(Model::MatchableRegistry.new, Model::MatchableCallCountDown.new)
+    @@PROXIES = Model::TimedMatchableRegistry.new(Model::MatchableRegistry.new, Model::MatchableCallCountDown.new)
     @@REWRITES = Model::MatchableRegistry.new
     @@PENDING_REQUESTS = PendingRequests.new
     @@ALL_DOUBLES = false
