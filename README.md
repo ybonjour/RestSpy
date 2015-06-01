@@ -40,7 +40,10 @@ google.endpoint('/search').should(return_error_code 401)
 You can also define series of doubles and proxies for an endpoint:
 
 ```ruby
-google.endpoint('/mail').should(first(return_error_code 500).and_then(return_error_code 401).and_then(proxy_to(facebook.remote_url)))
+google.endpoint('/mail').should(
+          first(return_error_code 500)
+          .and_then(return_error_code 401)
+          .and_then(proxy_to(facebook.remote_url)))
 ```
 
 
