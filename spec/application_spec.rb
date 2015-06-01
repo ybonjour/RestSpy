@@ -239,9 +239,9 @@ module RestSpy
     end
 
     context "Presedence" do
-      it "should return the Double if a Proxy and a Double match the endpoint" do
-        post '/doubles', {pattern:'/foobar', body: 'test'}
+      it "should return the most recently added matchable if both match same endpoint" do
         post '/proxies', {pattern:'/foobar', redirect_url: 'http://www.google.com'}
+        post '/doubles', {pattern:'/foobar', body: 'test'}
 
         get '/foobar'
 
@@ -251,6 +251,8 @@ module RestSpy
     end
 
     context "Remove all doubles" do
+      let(:proxy_response) { Response.proxy(200, {}, '') }
+
       it "should remove a double" do
         post '/doubles', {pattern:'/deleted', body: 'test'}
 
@@ -259,6 +261,20 @@ module RestSpy
         get '/deleted'
 
         expect(last_response.status).to be 404
+      end
+
+      it 'should not remove a proxy' do
+        post '/proxies', {pattern:'/proxy/dont/delete', redirect_url: 'http://www.google.com'}
+
+        delete '/doubles'
+
+        expect(ProxyServer).to receive(:execute_remote_request)
+                                   .with(anything, 'http://www.google.com', [])
+                                   .and_return(proxy_response)
+
+        get '/proxy/dont/delete'
+
+        expect(last_response).to be_ok
       end
     end
 

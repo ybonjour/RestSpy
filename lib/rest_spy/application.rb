@@ -10,12 +10,9 @@ require_relative 'environment'
 
 module RestSpy
   class Application < Sinatra::Base
-
-    @@DOUBLES = Model::TimedMatchableRegistry.new(Model::MatchableRegistry.new, Model::MatchableCallCountDown.new)
-    @@PROXIES = Model::TimedMatchableRegistry.new(Model::MatchableRegistry.new, Model::MatchableCallCountDown.new)
+    @@MATCHABLES = Model::TimedMatchableRegistry.new(Model::MatchableRegistry.new, Model::MatchableCallCountDown.new)
     @@REWRITES = Model::MatchableRegistry.new
     @@PENDING_REQUESTS = PendingRequests.new
-    @@ALL_DOUBLES = false
 
     set :server, %w[thin]
 
@@ -27,19 +24,22 @@ module RestSpy
       status_code = (params[:status_code] || 200).to_i
       headers = params[:headers] || {}
       d = Model::Double.new(params[:pattern], params[:body], status_code, headers)
-      @@DOUBLES.register(d, request.port)
+      @@MATCHABLES.register(d, request.port)
 
       respond_with_matchable(d)
     end
 
     delete '/doubles' do
       spy_logger.info "[#{request.port} - Clear all doubles]"
-      @@DOUBLES.reset(request.port)
+      @@MATCHABLES.unregister_if(request.port, proc { |m|
+        m.class.name == Model::Double.name
+      })
+      200
     end
 
     delete '/doubles/:id' do
       spy_logger.info "[#{request.port} - Remove double with id #{params[:id]}"
-      @@DOUBLES.unregister(params[:id], request.port)
+      @@MATCHABLES.unregister(params[:id], request.port)
       200
     end
 
@@ -49,7 +49,7 @@ module RestSpy
       spy_logger.info "[#{request.port} - Proxy: #{params[:pattPlern]} -> #{params[:redirect_url]}]"
 
       p = Model::Proxy.new(params[:pattern], params[:redirect_url])
-      @@PROXIES.register(p, request.port)
+      @@MATCHABLES.register(p, request.port)
 
       respond_with_matchable(p)
     end
@@ -87,16 +87,15 @@ module RestSpy
           puts "Starting #{request}"
           @@PENDING_REQUESTS.pending_request(request)
 
-          double = @@DOUBLES.find_for_endpoint(request.path, request.port)
-          proxy = @@PROXIES.find_for_endpoint(request.path, request.port)
+          matchable = @@MATCHABLES.find_for_endpoint(request.path, request.port)
           rewrites = @@REWRITES.find_all_for_endpoint(request.path, request.port)
 
-          if double
-            response = Response.double(double)
-          elsif proxy
-            response = ProxyServer.execute_remote_request(request, proxy.redirect_url, rewrites)
-          else
+          if matchable.nil?
             response = Response.not_found
+          elsif matchable.class.name == Model::Double.name
+            response = Response.double(matchable)
+          elsif matchable.class.name == Model::Proxy.name
+            response = ProxyServer.execute_remote_request(request, matchable.redirect_url, rewrites)
           end
 
           spy_logger.log_request(request, response)

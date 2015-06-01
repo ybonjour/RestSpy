@@ -15,6 +15,15 @@ module RestSpy
         subject.reset(port)
       end
 
+      it 'can unregister an element with a predicate' do
+        predicate = double
+        registry = double
+        subject = TimedMatchableRegistry.new(registry, MatchableCallCountDown.new)
+        expect(registry).to receive(:unregister_if).with(port, predicate)
+
+        subject.unregister_if(port, predicate)
+      end
+
       context 'when matchable has no lifetime' do
         it 'should register element in registry' do
           subject.register(element, port)

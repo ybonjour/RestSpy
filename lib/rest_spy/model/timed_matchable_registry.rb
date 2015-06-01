@@ -37,6 +37,10 @@ module RestSpy
         matchable
       end
 
+      def unregister_if(port, predicate)
+        registry.unregister_if(port, predicate)
+      end
+
       def reset(port)
         registry.reset(port)
       end

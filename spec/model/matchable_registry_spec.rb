@@ -98,6 +98,58 @@ module RestSpy
         end
       end
 
+      describe '#unregister_if' do
+          let(:predicate_true) { proc {|_| true} }
+          let(:predicate_false) { proc {|_| false} }
+
+        it 'should unregister an element if predicate returns true' do
+          registry.register(element, port)
+
+          registry.unregister_if(port, predicate_true)
+
+          result = registry.find_for_endpoint('/test', port)
+          expect(result).to be_nil
+        end
+
+        it 'should not unregister an element if predicate returns false' do
+          registry.register(element, port)
+
+          registry.unregister_if(port, predicate_false)
+
+          result = registry.find_for_endpoint('/test', port)
+          expect(result).to be == element
+        end
+
+        it 'should yield correct matchable to predicate' do
+          registry.register(element, port)
+
+          predicate_called = 0
+          predicate = proc { |m|
+            predicate_called += 1
+            expect(m).to be == element
+          }
+
+          registry.unregister_if(port, predicate)
+
+          expect(predicate_called).to be == 1
+        end
+
+        it 'should only unregister if element is on given port' do
+          other_port = 5678
+          registry.register(element, other_port)
+          registry.register(element, port)
+
+          registry.unregister_if(port, predicate_true)
+
+          result = registry.find_for_endpoint('/test', other_port)
+          expect(result).to be element
+        end
+
+        it 'should not unregister any element if port is unknown' do
+          registry.unregister_if(5678, predicate_true)
+        end
+      end
+
       context "find all elements" do
         it "returns an empty list if no elements are registered" do
           endpoints = registry.find_all_for_endpoint('/test', 1234)
