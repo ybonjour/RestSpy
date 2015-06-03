@@ -67,5 +67,8 @@ puts(response.status) #401
 response = Faraday.new.get('http://localhost:1234/mail')
 puts(response.status) #301
 
-
-
+# Getting a handle to an already running Spy server
+google_alias = Spy.from_existing_spy('http://localhost:5678')
+google_alias.endpoint('/error').should(return_error_code(500))
+response = Faraday.new.get('http://localhost:5678/error')
+puts(response.status) #500

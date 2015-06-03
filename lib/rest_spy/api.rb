@@ -128,10 +128,14 @@ module RestSpy
         @remote_url = remote_url
         @server = server
         @server.start
-        endpoint('.*').should(proxy_to remote_url)
+        endpoint('.*').should(proxy_to remote_url) unless remote_url.nil?
       end
 
       attr_reader :remote_url
+
+      def self.from_existing_spy(rest_spy_server_url)
+        Spy.new(nil, ExternalServer.new(rest_spy_server_url))
+      end
 
       def self.from_existing_server(remote_server_url, rest_spy_server_url)
         Spy.new(remote_server_url, ExternalServer.new(rest_spy_server_url))
