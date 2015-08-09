@@ -23,12 +23,11 @@ module RestSpy
     end
 
     def self.extract_relevant_headers(environment)
-      headers = Hash[environment
-                         .select { |k, _| k.start_with?("HTTP_") && k != "HTTP_HOST"}
-                         .map do |k, v|
-                       header_field = k.sub(/^HTTP_/, '').gsub('_', '-')
-                       [header_field, v]
-                     end]
+      headers = Hash[
+          environment
+              .select { |k, _| k.start_with?("HTTP_") && k != "HTTP_HOST"}
+              .map { |k, v| [k.sub(/^HTTP_/, '').gsub('_', '-'), v] }
+      ]
 
       if environment['CONTENT_TYPE']
         headers['CONTENT-TYPE'] = environment['CONTENT_TYPE']
