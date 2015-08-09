@@ -23,7 +23,7 @@ module RestSpy
         entry = Entry.new(matchable_id, port)
         return true unless counts.has_key? entry
 
-        return counts[entry] == 0
+        counts[entry] == 0
       end
 
       def expire(matchable_id, port)
