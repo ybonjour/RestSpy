@@ -17,13 +17,13 @@ module RestSpy
         return unless counts.has_key? entry
 
         counts[entry] -= 1
+
+        expire(matchable_id, port) if counts[entry] == 0
       end
 
       def expired?(matchable_id, port)
         entry = Entry.new(matchable_id, port)
-        return true unless counts.has_key? entry
-
-        counts[entry] == 0
+        not counts.has_key? entry
       end
 
       def expire(matchable_id, port)
