@@ -6,9 +6,10 @@ module RestSpy
       @path = path
       @headers = headers
       @body = body
+      @time = Time.now
     end
 
-    attr_reader :port, :method, :path, :headers, :body
+    attr_reader :port, :method, :path, :headers, :body, :time
 
     def to_hash
       {
@@ -16,7 +17,8 @@ module RestSpy
           'method' => method,
           'path' => path,
           'headers' => headers,
-          'body' => body
+          'body' => body,
+          'time' => time
       }
     end
 

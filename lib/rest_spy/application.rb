@@ -113,17 +113,6 @@ module RestSpy
           request.body.read)
     end
 
-    def respond(response)
-      headers(response.headers)
-      body(response.body)
-      status(response.status_code)
-    end
-
-    def respond_with_matchable(matchable)
-      body(JSON.dump({id: matchable.id}))
-      status(200)
-    end
-
     def handle_request(request)
       matchable = @@MATCHABLES.find_for_endpoint(request.path, request.port)
       rewrites = @@REWRITES.find_all_for_endpoint(request.path, request.port)
@@ -135,6 +124,17 @@ module RestSpy
       elsif matchable.class.name == Model::Proxy.name
         ProxyServer.execute_remote_request(request, matchable.redirect_url, rewrites)
       end
+    end
+
+    def respond(response)
+      headers(response.headers)
+      body(response.body)
+      status(response.status_code)
+    end
+
+    def respond_with_matchable(matchable)
+      body(JSON.dump({id: matchable.id}))
+      status(200)
     end
 
     def self.create_spy_logger
