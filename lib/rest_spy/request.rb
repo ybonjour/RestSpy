@@ -13,12 +13,12 @@ module RestSpy
 
     def to_hash
       {
-          'port' => port,
-          'method' => method,
-          'path' => path,
-          'headers' => headers,
-          'body' => body,
-          'time' => time
+          port: port,
+          method: method,
+          path: path,
+          headers: headers,
+          body: body,
+          time: time
       }
     end
 
