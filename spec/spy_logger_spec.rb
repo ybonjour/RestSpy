@@ -14,8 +14,9 @@ module RestSpy
     let(:response) { Response.new('proxy', 200, {}, nil) }
 
     context 'when no standard logger provided' do
+      let(:logger) { SpyLogger.new(nil) }
+
       it 'still tracks the request' do
-        logger = SpyLogger.new(nil)
         logger.log_request(request, response)
 
         requests = logger.get_requests
