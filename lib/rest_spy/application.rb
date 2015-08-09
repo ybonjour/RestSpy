@@ -84,7 +84,6 @@ module RestSpy
       send method, /(.*)/ do
         begin
           request = extract_request
-          puts "Starting #{request}"
           @@PENDING_REQUESTS.pending_request(request)
 
           matchable = @@MATCHABLES.find_for_endpoint(request.path, request.port)
