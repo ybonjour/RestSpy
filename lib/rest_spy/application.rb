@@ -86,24 +86,14 @@ module RestSpy
           request = extract_request
           @@PENDING_REQUESTS.pending_request(request)
 
-          matchable = @@MATCHABLES.find_for_endpoint(request.path, request.port)
-          rewrites = @@REWRITES.find_all_for_endpoint(request.path, request.port)
+          response = handle_request(request)
 
-          if matchable.nil?
-            response = Response.not_found
-          elsif matchable.class.name == Model::Double.name
-            response = Response.double(matchable)
-          elsif matchable.class.name == Model::Proxy.name
-            response = ProxyServer.execute_remote_request(request, matchable.redirect_url, rewrites)
-          end
-
-          spy_logger.log_request(request, response)
           respond(response)
         rescue Exception => e
           response = Response.exception(e)
-          spy_logger.log_request(request, response) if request
           respond(response)
         ensure
+          spy_logger.log_request(request, response)
           @@PENDING_REQUESTS.completed_request(request) if request
         end
       end
@@ -132,6 +122,19 @@ module RestSpy
     def respond_with_matchable(matchable)
       body(JSON.dump({id: matchable.id}))
       status(200)
+    end
+
+    def handle_request(request)
+      matchable = @@MATCHABLES.find_for_endpoint(request.path, request.port)
+      rewrites = @@REWRITES.find_all_for_endpoint(request.path, request.port)
+
+      if matchable.nil?
+        Response.not_found
+      elsif matchable.class.name == Model::Double.name
+        Response.double(matchable)
+      elsif matchable.class.name == Model::Proxy.name
+        ProxyServer.execute_remote_request(request, matchable.redirect_url, rewrites)
+      end
     end
 
     def self.create_spy_logger
