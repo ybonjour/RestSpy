@@ -10,7 +10,7 @@ Once a `Spy` is created, you can start mocking certain endpoints, by providing `
 
 
 ### Examples
-To get easy access to the RestSpy API you can include the ```ruby RestSpy::Api```
+To get easy access to the RestSpy API you can include ` RestSpy::Api`
 
 ```ruby 
 include RestSpy::Api
