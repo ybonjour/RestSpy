@@ -35,7 +35,7 @@ module RestSpy
     end
 
     def ungzip(input)
-      Zlib::GzipReader.new(StringIO.new(input), :encoding => 'ASCII-8BIT').read
+      Zlib::GzipReader.new(StringIO.new(input), :encoding => 'UTF-8').read
     end
 
     def inflate(input)
