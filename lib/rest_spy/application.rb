@@ -93,7 +93,7 @@ module RestSpy
           response = Response.exception(e)
           respond(response)
         ensure
-          spy_logger.log_request(request, response)
+          spy_logger.log_request(request, response) if request and response
           @@PENDING_REQUESTS.completed_request(request) if request
         end
       end
