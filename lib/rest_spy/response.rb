@@ -7,7 +7,9 @@ module RestSpy
       @status_code = status_code
       @headers = headers
       @body = body
-      @decoded_body = headers ? Encoding.decode(body, headers['Content-Encoding']) : body
+      encoding = headers['Content-Encoding']
+      @decoded_body = encoding ? Encoding.decode(body, encoding) : body
+      @decoded_body = @decoded_body.force_encoding("UTF-8")
     end
 
     def self.proxy(status_code, headers, body)
