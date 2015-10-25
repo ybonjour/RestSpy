@@ -87,15 +87,15 @@ module RestSpy
       CreateDouble.new(200, headers, json_body)
     end
 
-    def first(command)
-      SerialCommand.new(command)
-    end
-
-    def return_as_jpeg(path)
-      File.open(path, 'rb') {|file|
-        headers = {'Content-Type' => 'image/jpeg'}
+    def return_as_image(path)
+      headers = {'Content-Type' => "image/#{path.split(".").last}"}
+      File.open(path, 'rb') { |file|
         CreateDouble.new(200, headers, file.read)
       }
+    end
+
+    def first(command)
+      SerialCommand.new(command)
     end
 
     class Endpoint
@@ -145,9 +145,13 @@ module RestSpy
         Spy.new(server_url, LocalServer.new(port))
       end
 
-      def and_rewrite(from, to)
+      def rewrite(from, to)
         server.post '/rewrites', {pattern: '.*', from: from, to: to}
         self
+      end
+
+      def and_rewrite(from, to)
+        rewrite(from, to)
       end
 
       def endpoint(endpoint_pattern)
