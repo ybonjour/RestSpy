@@ -77,6 +77,10 @@ module RestSpy
       CreateProxy.new(redirect_url)
     end
 
+    def redirect_to(redirect_url)
+      CreateDouble.new(302, {'Location' => redirect_url}, '')
+    end
+
     def return_response(body = '', status_code = 200, headers = {})
       CreateDouble.new(status_code, headers, body)
     end
