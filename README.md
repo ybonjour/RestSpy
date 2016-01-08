@@ -2,7 +2,8 @@
 Mock REST endpoints or proxy them to real endpoints.
 
 ## Spies
-A `Spy` is a local proxy server that by default redirects requests to any endpoint to another server.
+A `Spy` is a local proxy server that by default redirects all requests to another server.
+You can then start to mock certain endpoints.
 
 In a test setup you will create a `Spy` for every REST service that your application depends on and that you want to spy on.
 
